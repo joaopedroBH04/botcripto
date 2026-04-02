@@ -134,74 +134,40 @@ def fetch_crypto_current(coin_ids: list[str]) -> pd.DataFrame:
         return pd.DataFrame()
 
 
-@st.cache_data(ttl=CACHE_TTL * 2)
+@st.cache_data(ttl=CACHE_TTL * 3)  # Cache 30 min
 def fetch_crypto_history(coin_id: str, days: int = LOOKBACK_DAYS) -> pd.DataFrame:
     """
-    Busca historico de precos de uma cripto.
-    Estrategia em 2 chamadas:
-      1) /coins/{id}/ohlc — dados reais de Open/High/Low/Close (max 180 dias)
-      2) /coins/{id}/market_chart — dados de Close + Volume (periodo completo)
-    Combina ambos para ter OHLCV real sempre que possivel.
+    Busca historico diario de precos via /market_chart (1 chamada por ativo).
+    Constroi OHLCV deterministico a partir dos dados de Close + Volume.
+    Evita o endpoint /ohlc que gera timestamps duplicados ao agregar de 4h para 1d.
     """
     try:
-        # --- Passo 1: Buscar OHLC real (ate 180 dias no plano free) ---
-        ohlc_df = pd.DataFrame()
-        ohlc_days = min(days, 180)
-        try:
-            url_ohlc = f"{COINGECKO_BASE}/coins/{coin_id}/ohlc"
-            params_ohlc = {"vs_currency": "usd", "days": ohlc_days}
-            resp_ohlc = _coingecko_get(url_ohlc, params=params_ohlc)
-            ohlc_data = resp_ohlc.json()
+        url = f"{COINGECKO_BASE}/coins/{coin_id}/market_chart"
+        params = {"vs_currency": "usd", "days": days, "interval": "daily"}
+        resp = _coingecko_get(url, params=params)
+        data = resp.json()
 
-            if ohlc_data and isinstance(ohlc_data, list) and len(ohlc_data) > 0:
-                ohlc_df = pd.DataFrame(ohlc_data, columns=["timestamp", "Open", "High", "Low", "Close"])
-                ohlc_df["Date"] = pd.to_datetime(ohlc_df["timestamp"], unit="ms")
-                ohlc_df.set_index("Date", inplace=True)
-                ohlc_df.drop(columns=["timestamp"], inplace=True)
-                # Agregar por dia (OHLC pode vir em intervalos de 4h)
-                ohlc_daily = ohlc_df.resample("D").agg({
-                    "Open": "first",
-                    "High": "max",
-                    "Low": "min",
-                    "Close": "last",
-                }).dropna()
-                ohlc_df = ohlc_daily
-        except Exception:
-            pass  # Fallback para market_chart abaixo
-
-        # --- Passo 2: Buscar market_chart para Volume (sempre necessario) ---
-        time.sleep(1)  # Pequena pausa entre as 2 chamadas do mesmo ativo
-        url_mc = f"{COINGECKO_BASE}/coins/{coin_id}/market_chart"
-        params_mc = {"vs_currency": "usd", "days": days, "interval": "daily"}
-        resp_mc = _coingecko_get(url_mc, params=params_mc)
-        mc_data = resp_mc.json()
-
-        prices = mc_data.get("prices", [])
-        volumes = mc_data.get("total_volumes", [])
+        prices  = data.get("prices", [])
+        volumes = data.get("total_volumes", [])
 
         if not prices:
             return pd.DataFrame()
 
-        mc_df = pd.DataFrame(prices, columns=["timestamp", "Close"])
-        mc_df["Volume"] = [v[1] for v in volumes] if volumes and len(volumes) == len(prices) else 0
-        mc_df["Date"] = pd.to_datetime(mc_df["timestamp"], unit="ms")
-        mc_df["Date"] = mc_df["Date"].dt.normalize()  # Normalizar para meia-noite
-        mc_df.set_index("Date", inplace=True)
-        mc_df.drop(columns=["timestamp"], inplace=True)
+        df = pd.DataFrame(prices, columns=["timestamp", "Close"])
+        df["Volume"] = [v[1] for v in volumes] if volumes and len(volumes) == len(prices) else 0.0
+        df["Date"] = pd.to_datetime(df["timestamp"], unit="ms").dt.normalize()
+        df.drop(columns=["timestamp"], inplace=True)
+        df.set_index("Date", inplace=True)
 
-        # --- Passo 3: Combinar OHLC real com Volume ---
-        if not ohlc_df.empty and len(ohlc_df) > 20:
-            # Usar OHLC real e juntar Volume do market_chart
-            df = ohlc_df.copy()
-            df["Volume"] = mc_df["Volume"].reindex(df.index, method="nearest").fillna(0)
-        else:
-            # Fallback: usar apenas market_chart (sem OHLC real)
-            df = mc_df.copy()
-            df["Open"] = df["Close"].shift(1).fillna(df["Close"])
-            # Estimativa deterministica baseada na variacao real
-            daily_change = df["Close"].pct_change().abs().fillna(0.005).clip(0.002, 0.05)
-            df["High"] = df[["Open", "Close"]].max(axis=1) * (1 + daily_change * 0.5)
-            df["Low"] = df[["Open", "Close"]].min(axis=1) * (1 - daily_change * 0.5)
+        # Remover eventuais datas duplicadas (mantem a ultima entrada do dia)
+        df = df[~df.index.duplicated(keep="last")]
+        df.sort_index(inplace=True)
+
+        # Construir OHLC deterministico a partir do Close diario
+        df["Open"] = df["Close"].shift(1).fillna(df["Close"])
+        daily_range = df["Close"].pct_change().abs().fillna(0.005).clip(0.002, 0.04)
+        df["High"] = df[["Open", "Close"]].max(axis=1) * (1 + daily_range * 0.5)
+        df["Low"]  = df[["Open", "Close"]].min(axis=1) * (1 - daily_range * 0.5)
 
         return df
 
@@ -210,31 +176,28 @@ def fetch_crypto_history(coin_id: str, days: int = LOOKBACK_DAYS) -> pd.DataFram
         return pd.DataFrame()
 
 
-@st.cache_data(ttl=CACHE_TTL * 3)  # Cache 30 min — historico muda muito pouco
+@st.cache_data(ttl=CACHE_TTL * 3)  # Cache 30 min — dados diarios mudam pouco
 def fetch_all_crypto_histories(coin_ids: list[str], days: int = LOOKBACK_DAYS) -> dict:
     """
-    Busca historico de todas as criptos com controle de rate limiting.
-    Retorna dict: {coin_id: DataFrame}
-    Pausa 3s extras entre cada chamada para garantir que nao estoura o limite.
+    Busca historico de todas as criptos com rate limiting controlado.
+    1 chamada por ativo (vs. 2 antes) + pausa de 2s entre ativos.
     """
     results = {}
-    progress_text = st.empty()
+    progress_bar = st.progress(0, text="Inicializando...")
     total = len(coin_ids)
 
     for i, coin_id in enumerate(coin_ids):
-        progress_text.text(
-            f"📊 Buscando historico: {coin_id.title()} ({i+1}/{total})... "
-            f"{'⏳ aguarde' if i > 0 else ''}"
-        )
+        pct = int((i / total) * 100)
+        progress_bar.progress(pct, text=f"📊 {coin_id.title()} ({i+1}/{total})...")
         df = fetch_crypto_history(coin_id, days)
         if not df.empty:
             results[coin_id] = df
-
-        # Pausa extra entre criptos (cada uma faz 2 chamadas internas)
         if i < total - 1:
-            time.sleep(5)
+            time.sleep(2)  # 2s entre ativos (1 chamada cada, plano free suporta bem)
 
-    progress_text.empty()
+    progress_bar.progress(100, text="Concluido!")
+    time.sleep(0.3)
+    progress_bar.empty()
     return results
 
 

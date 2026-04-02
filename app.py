@@ -683,7 +683,7 @@ def render_risk():
                 asset_id_r = st.selectbox("Ativo", STOCK_TICKERS, key="risk_asset")
                 a_type_r = "stock"
         with col2:
-            portfolio_val = st.number_input("Valor do seu Portfolio (USD)", value=DEFAULT_PORTFOLIO_VALUE,
+            portfolio_val = st.number_input("Valor do seu Portfolio (USD)", value=float(DEFAULT_PORTFOLIO_VALUE),
                                            min_value=100.0, step=500.0)
             risk_pct = st.slider("Risco por operacao (%)", min_value=0.5, max_value=10.0,
                                 value=DEFAULT_RISK_PER_TRADE, step=0.5,

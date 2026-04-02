@@ -46,8 +46,8 @@ ATR_PERIOD = 14
 ATR_STOP_MULTIPLIER = 2.0  # Stop-loss = preco - (ATR * multiplicador)
 
 # --- Gestao de risco ---
-DEFAULT_RISK_PER_TRADE = 2.0  # % do portfolio a arriscar por operacao
-DEFAULT_PORTFOLIO_VALUE = 10000  # Valor padrao em USD
+DEFAULT_RISK_PER_TRADE = 2.0   # % do portfolio a arriscar por operacao
+DEFAULT_PORTFOLIO_VALUE = 10000.0  # Valor padrao em USD (float obrigatorio)
 
 # --- Fibonacci (retracements) ---
 FIBONACCI_LEVELS = [0, 0.236, 0.382, 0.5, 0.618, 0.786, 1.0]
