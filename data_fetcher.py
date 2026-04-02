@@ -253,10 +253,27 @@ def fetch_stock_history(ticker: str, period: str = "1y") -> pd.DataFrame:
         if isinstance(df.columns, pd.MultiIndex):
             df.columns = df.columns.get_level_values(0)
         df.index.name = "Date"
+        # Garantir que o indice e DatetimeIndex sem timezone
+        if hasattr(df.index, "tz") and df.index.tz is not None:
+            df.index = df.index.tz_localize(None)
         return df
     except Exception as e:
         st.warning(f"⚠️ Erro ao buscar historico de {ticker}: {e}")
         return pd.DataFrame()
+
+
+@st.cache_data(ttl=CACHE_TTL * 4)
+def fetch_usd_brl() -> float:
+    """Busca cotacao atual do dolar (USD/BRL) para conversao de precos."""
+    try:
+        df = yf.download("BRL=X", period="2d", progress=False, auto_adjust=True)
+        if not df.empty:
+            if isinstance(df.columns, pd.MultiIndex):
+                df.columns = df.columns.get_level_values(0)
+            return float(df["Close"].iloc[-1])
+        return 5.0  # Fallback
+    except Exception:
+        return 5.0
 
 
 @st.cache_data(ttl=CACHE_TTL)
