@@ -41,77 +41,243 @@ st.set_page_config(
 )
 
 # -------------------------------------------------------
-# CSS customizado
+# CSS customizado — Design System BotCripto
 # -------------------------------------------------------
 st.markdown("""
 <style>
-    .recommendation-box {
-        background: #1a1f2e;
-        border-left: 4px solid #00d4aa;
-        padding: 15px;
-        border-radius: 5px;
-        margin: 10px 0;
-        line-height: 1.6;
-    }
-    .alert-buy {
-        background: #0a2e1a;
-        border: 1px solid #00d4aa;
-        padding: 12px;
-        border-radius: 5px;
-        margin: 5px 0;
-    }
-    .alert-sell {
-        background: #2e0a0a;
-        border: 1px solid #ff4444;
-        padding: 12px;
-        border-radius: 5px;
-        margin: 5px 0;
-    }
-    .divergence-box {
-        background: #1a2e1a;
-        border: 2px solid #00ff88;
-        padding: 12px;
-        border-radius: 5px;
-        margin: 10px 0;
-        font-weight: bold;
-    }
-    .confluence-box {
-        background: #1a1f2e;
-        border: 1px solid #3498db;
-        padding: 10px;
-        border-radius: 5px;
-        text-align: center;
-    }
-    .risk-metric {
-        background: #1a1f2e;
-        border-radius: 5px;
-        padding: 10px;
-        margin: 3px 0;
-    }
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+* { font-family: 'Inter', sans-serif !important; }
+
+/* ─── Background ─── */
+.stApp { background: #060B14; }
+section[data-testid="stSidebar"] {
+    background: #090F1C !important;
+    border-right: 1px solid #1A2A40 !important;
+}
+section[data-testid="stSidebar"] > div { background: transparent !important; }
+
+/* ─── Ocultar branding Streamlit ─── */
+#MainMenu { visibility: hidden; }
+footer { visibility: hidden; }
+
+/* ─── Cards ─── */
+.card {
+    background: #0F1923;
+    border: 1px solid #1A2A40;
+    border-radius: 12px;
+    padding: 20px 24px;
+    margin: 8px 0;
+    transition: border-color 0.25s, box-shadow 0.25s;
+}
+.card:hover {
+    border-color: rgba(0, 229, 195, 0.22);
+    box-shadow: 0 4px 28px rgba(0, 0, 0, 0.45);
+}
+
+/* ─── Caixas de Alerta ─── */
+.alert-buy {
+    background: rgba(0, 229, 195, 0.05);
+    border: 1px solid rgba(0, 229, 195, 0.16);
+    border-left: 3px solid #00E5C3;
+    padding: 16px 20px;
+    border-radius: 10px;
+    margin: 8px 0;
+    color: #C8D8E8;
+    font-size: 0.88rem;
+    line-height: 1.65;
+}
+.alert-sell {
+    background: rgba(255, 71, 87, 0.05);
+    border: 1px solid rgba(255, 71, 87, 0.16);
+    border-left: 3px solid #FF4757;
+    padding: 16px 20px;
+    border-radius: 10px;
+    margin: 8px 0;
+    color: #C8D8E8;
+    font-size: 0.88rem;
+    line-height: 1.65;
+}
+.divergence-box {
+    background: rgba(74, 158, 255, 0.05);
+    border: 1px solid rgba(74, 158, 255, 0.25);
+    border-left: 3px solid #4A9EFF;
+    padding: 14px 20px;
+    border-radius: 10px;
+    margin: 10px 0;
+    font-weight: 600;
+    color: #4A9EFF;
+    font-size: 0.88rem;
+    line-height: 1.65;
+}
+
+/* ─── Caixa de Recomendacao ─── */
+.recommendation-box {
+    background: linear-gradient(140deg, #0C1520 0%, #101C2A 100%);
+    border: 1px solid #1A2A40;
+    border-top: 2px solid #00E5C3;
+    padding: 18px 22px;
+    border-radius: 10px;
+    margin: 12px 0;
+    line-height: 1.75;
+    font-size: 0.9rem;
+    color: #8B9AB0;
+}
+
+/* ─── Caixa de Confluencia ─── */
+.confluence-box {
+    background: #0F1923;
+    border: 1px solid #1A2A40;
+    border-radius: 12px;
+    padding: 22px 16px;
+    text-align: center;
+}
+.confluence-box h3 {
+    font-size: 2.4rem;
+    font-weight: 700;
+    margin: 0 0 6px 0;
+    background: linear-gradient(135deg, #00E5C3, #4A9EFF);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+.confluence-box p {
+    color: #4A5568;
+    font-size: 0.78rem;
+    margin: 4px 0 0 0;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* ─── Risk Metric ─── */
+.risk-metric {
+    background: #0F1923;
+    border: 1px solid #1A2A40;
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin: 4px 0;
+}
+
+/* ─── Badges de Status ─── */
+.badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+}
+.badge-buy    { background: rgba(0,229,195,0.12); color: #00E5C3; border: 1px solid rgba(0,229,195,0.28); }
+.badge-watch  { background: rgba(255,184,0,0.12);  color: #FFB800; border: 1px solid rgba(255,184,0,0.28); }
+.badge-sell   { background: rgba(255,71,87,0.12);  color: #FF4757; border: 1px solid rgba(255,71,87,0.28); }
+.badge-neutral{ background: rgba(139,154,176,0.10); color: #8B9AB0; border: 1px solid rgba(139,154,176,0.25); }
+
+/* ─── Dots de Status ─── */
+.dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
+.dot-green  { background: #00E5C3; box-shadow: 0 0 6px rgba(0,229,195,0.7); }
+.dot-yellow { background: #FFB800; box-shadow: 0 0 6px rgba(255,184,0,0.7); }
+.dot-red    { background: #FF4757; box-shadow: 0 0 6px rgba(255,71,87,0.7); }
+.dot-gray   { background: #2A3A50; }
+
+/* ─── Metrics ─── */
+[data-testid="stMetric"] {
+    background: #0F1923 !important;
+    border: 1px solid #1A2A40 !important;
+    border-radius: 10px !important;
+    padding: 14px 18px !important;
+}
+[data-testid="stMetricLabel"] > div {
+    font-size: 0.7rem !important;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #4A5568 !important;
+}
+[data-testid="stMetricValue"] { color: #E8EDF5 !important; font-weight: 700 !important; }
+
+/* ─── Botoes ─── */
+.stButton > button {
+    background: linear-gradient(135deg, #00E5C3, #00B8A0) !important;
+    color: #060B14 !important;
+    border: none !important;
+    font-weight: 600 !important;
+    border-radius: 8px !important;
+    padding: 8px 20px !important;
+    transition: all 0.2s ease !important;
+    letter-spacing: 0.3px;
+}
+.stButton > button:hover {
+    transform: translateY(-1px) !important;
+    box-shadow: 0 6px 20px rgba(0, 229, 195, 0.28) !important;
+}
+
+/* ─── Sidebar ─── */
+.stRadio label { font-size: 0.87rem !important; color: #8B9AB0 !important; }
+.stRadio [data-baseweb="radio"] { padding: 6px 0 !important; }
+
+/* ─── Abas ─── */
+[data-baseweb="tab-list"] { background: #090F1C !important; border-radius: 8px; gap: 4px; }
+[data-baseweb="tab"] { border-radius: 6px !important; font-size: 0.84rem !important; }
+
+/* ─── Expander ─── */
+[data-testid="stExpander"] { border: 1px solid #1A2A40 !important; border-radius: 8px !important; }
+
+/* ─── DataFrames ─── */
+[data-testid="stDataFrame"] { border: 1px solid #1A2A40 !important; border-radius: 10px !important; overflow: hidden; }
+
+/* ─── Scrollbar ─── */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: #060B14; }
+::-webkit-scrollbar-thumb { background: #1A2A40; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #2A3A50; }
+
+/* ─── Divisor ─── */
+hr { border-color: #1A2A40 !important; margin: 20px 0 !important; }
+
+/* ─── Label de secao ─── */
+.section-label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: #4A5568;
+    margin: 24px 0 10px 0;
+    display: block;
+}
+
+/* ─── Alerts nativos Streamlit ─── */
+[data-testid="stAlert"] { border-radius: 10px !important; border-width: 1px !important; }
 </style>
 """, unsafe_allow_html=True)
 
 # -------------------------------------------------------
 # Sidebar
 # -------------------------------------------------------
-st.sidebar.title("\U0001f4ca BotCripto v2")
-st.sidebar.markdown("Monitor Inteligente de Mercado")
-st.sidebar.caption("Scoring v2: 10 indicadores + Confluencia")
+st.sidebar.markdown("""
+<div style="padding:18px 0 20px 0; border-bottom:1px solid #1A2A40; margin-bottom:20px;">
+    <div style="font-size:1.55rem; font-weight:700; background:linear-gradient(135deg,#00E5C3,#4A9EFF);
+                -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+                background-clip:text; letter-spacing:-0.5px;">BotCripto</div>
+    <div style="font-size:0.68rem; color:#4A5568; text-transform:uppercase;
+                letter-spacing:1.8px; margin-top:4px;">Monitor Financeiro v2</div>
+</div>
+""", unsafe_allow_html=True)
 
+st.sidebar.markdown('<span style="font-size:0.68rem;color:#4A5568;text-transform:uppercase;letter-spacing:1.2px;">Navegacao</span>', unsafe_allow_html=True)
 page = st.sidebar.radio(
     "Navegacao",
     [
-        "\U0001f3e0 Visao Geral",
-        "\U0001f50d Analise Detalhada",
-        "\U0001f6e1 Gestao de Risco",
-        "\U0001f514 Alertas",
-        "\U0001f4f0 Noticias",
-        "\U0001f4bc Portfolio",
+        "Visao Geral",
+        "Analise Detalhada",
+        "Gestao de Risco",
+        "Alertas",
+        "Noticias",
+        "Portfolio",
     ],
+    label_visibility="collapsed",
 )
 
 st.sidebar.markdown("---")
-if st.sidebar.button("\U0001f504 Atualizar Dados"):
+if st.sidebar.button("Atualizar Dados"):
     st.cache_data.clear()
     st.rerun()
 
@@ -156,13 +322,36 @@ def get_history_and_analysis(asset_id: str, asset_type: str):
 
 
 def score_emoji(score: int) -> str:
+    """Retorna texto simples para uso em dataframes (sem HTML)."""
     if score >= BUY_CONFIDENCE_STRONG:
-        return "\U0001f7e2"
+        return "COMPRA FORTE"
     elif score >= BUY_CONFIDENCE_MODERATE:
-        return "\U0001f7e1"
+        return "OBSERVACAO"
     elif score >= SELL_CONFIDENCE:
-        return "\u26aa"
-    return "\U0001f534"
+        return "NEUTRO"
+    return "VENDA"
+
+
+def score_badge(score: int) -> str:
+    """Retorna badge HTML para uso em markdown/HTML."""
+    if score >= BUY_CONFIDENCE_STRONG:
+        return '<span class="badge badge-buy">Compra Forte</span>'
+    elif score >= BUY_CONFIDENCE_MODERATE:
+        return '<span class="badge badge-watch">Observacao</span>'
+    elif score >= SELL_CONFIDENCE:
+        return '<span class="badge badge-neutral">Neutro</span>'
+    return '<span class="badge badge-sell">Venda</span>'
+
+
+def score_dot(score: int) -> str:
+    """Retorna dot HTML colorido para indicadores."""
+    if score >= BUY_CONFIDENCE_STRONG:
+        return '<span class="dot dot-green"></span>'
+    elif score >= BUY_CONFIDENCE_MODERATE:
+        return '<span class="dot dot-yellow"></span>'
+    elif score >= SELL_CONFIDENCE:
+        return '<span class="dot dot-gray"></span>'
+    return '<span class="dot dot-red"></span>'
 
 
 def format_number(n):
@@ -387,11 +576,11 @@ def analyze_all_assets():
             confluence = score_result.get("confluence", {})
             scores.append({
                 "Ativo": f"{row['name']} ({row['symbol']})",
-                "Tipo": "\U0001f4b0 Crypto",
+                "Tipo": "Cripto",
                 "Preco": f"${row['price']:.4f}" if row["price"] < 1 else (f"${row['price']:.2f}" if row["price"] < 1000 else format_number(row["price"])),
                 "24h": f"{row['change_24h']:+.2f}%",
                 "Score": score_result["score"],
-                "Sinal": f"{score_emoji(score_result['score'])} {score_result['label']}",
+                "Sinal": score_result['label'],
                 "Confluencia": f"{confluence.get('agree_buy', 0)}/{confluence.get('total', 10)}",
                 "Tendencia": score_result["trend"].replace("_", " ").title(),
                 "id": row["id"],
@@ -414,11 +603,11 @@ def analyze_all_assets():
                 confluence = score_result.get("confluence", {})
                 scores.append({
                     "Ativo": f"{row['name']} ({row['symbol']})",
-                    "Tipo": "\U0001f4c8 Acao",
+                    "Tipo": "Acao",
                     "Preco": f"${row['price']:.2f}" if row["price"] < 1000 else format_number(row["price"]),
                     "24h": f"{row['change_24h']:+.2f}%",
                     "Score": score_result["score"],
-                    "Sinal": f"{score_emoji(score_result['score'])} {score_result['label']}",
+                    "Sinal": score_result['label'],
                     "Confluencia": f"{confluence.get('agree_buy', 0)}/{confluence.get('total', 10)}",
                     "Tendencia": score_result["trend"].replace("_", " ").title(),
                     "id": row["id"],
@@ -435,7 +624,7 @@ def analyze_all_assets():
 # PAGINA: Visao Geral
 # -------------------------------------------------------
 def render_overview():
-    st.title("\U0001f3e0 Visao Geral do Mercado")
+    st.markdown('<h2 style="font-weight:700;color:#E8EDF5;letter-spacing:-0.5px;margin-bottom:4px;">Visao Geral do Mercado</h2><p style="color:#4A5568;font-size:0.82rem;margin-top:0;margin-bottom:20px;">Panorama em tempo real — criptomoedas, acoes e sentimento do mercado</p>', unsafe_allow_html=True)
 
     # Pulse do mercado
     col1, col2, col3 = st.columns(3)
@@ -474,9 +663,9 @@ def render_overview():
 
     if divergence_alerts:
         st.markdown(
-            '<div class="divergence-box">\U0001f4a1 DIVERGENCIA BULLISH DETECTADA em: '
+            '<div class="divergence-box"><strong>DIVERGENCIA BULLISH DETECTADA</strong> &mdash; '
             + ", ".join(divergence_alerts)
-            + " — Sinal forte de possivel reversao para alta!</div>",
+            + "<br><span style='font-weight:400;font-size:0.82rem;color:#8B9AB0;'>Sinal forte de possivel reversao para alta.</span></div>",
             unsafe_allow_html=True,
         )
 
@@ -486,17 +675,17 @@ def render_overview():
 
     if not strong_buys.empty:
         st.success(
-            "\U0001f7e2 **OPORTUNIDADES:** "
+            "**OPORTUNIDADES:** "
             + ", ".join([f"{r['Ativo']} (Score: {r['Score']}, {r['Confluencia']})" for _, r in strong_buys.iterrows()])
         )
     if not strong_sells.empty:
         st.error(
-            "\U0001f534 **ZONA DE VENDA:** "
+            "**ZONA DE VENDA:** "
             + ", ".join([f"{r['Ativo']} (Score: {r['Score']})" for _, r in strong_sells.iterrows()])
         )
 
     # Tabela principal
-    st.subheader("\U0001f4ca Ranking de Oportunidades")
+    st.markdown('<span class="section-label">Ranking de Oportunidades</span>', unsafe_allow_html=True)
     display_cols = ["Ativo", "Tipo", "Preco", "24h", "Score", "Confluencia", "Sinal", "Tendencia"]
     display_df = scores_df[[c for c in display_cols if c in scores_df.columns]].reset_index(drop=True)
     display_df.index += 1
@@ -511,7 +700,7 @@ def render_overview():
     )
 
     # Top 3 recomendacoes
-    st.subheader("\U0001f4a1 Top Recomendacoes")
+    st.markdown('<span class="section-label">Top Recomendacoes</span>', unsafe_allow_html=True)
     top3 = scores_df.head(3)
     cols = st.columns(min(len(top3), 3))
     for i, (_, row) in enumerate(top3.iterrows()):
@@ -529,7 +718,7 @@ def render_overview():
 # PAGINA: Analise Detalhada
 # -------------------------------------------------------
 def render_deep_dive():
-    st.title("\U0001f50d Analise Detalhada")
+    st.markdown('<h2 style="font-weight:700;color:#E8EDF5;letter-spacing:-0.5px;margin-bottom:4px;">Analise Detalhada</h2><p style="color:#4A5568;font-size:0.82rem;margin-top:0;margin-bottom:20px;">10 indicadores tecnicos + gestao de risco por ativo</p>', unsafe_allow_html=True)
 
     col1, col2 = st.columns(2)
     with col1:
@@ -597,21 +786,21 @@ def render_deep_dive():
 
             if rsi_div.get("type") == "bullish" or macd_div.get("type") == "bullish":
                 st.markdown(
-                    '<div class="divergence-box">\U0001f4a1 DIVERGENCIA BULLISH<br>'
-                    'Sinal forte de reversao!</div>',
+                    '<div class="divergence-box"><strong>DIVERGENCIA BULLISH</strong><br>'
+                    '<span style="font-weight:400;font-size:0.82rem;">Sinal forte de reversao para alta.</span></div>',
                     unsafe_allow_html=True,
                 )
             elif rsi_div.get("type") == "bearish" or macd_div.get("type") == "bearish":
                 st.markdown(
-                    '<div class="alert-sell">\u26a0\ufe0f DIVERGENCIA BEARISH<br>'
-                    'Risco de reversao para baixa!</div>',
+                    '<div class="alert-sell"><strong>DIVERGENCIA BEARISH</strong><br>'
+                    '<span style="font-size:0.82rem;">Risco de reversao para baixa.</span></div>',
                     unsafe_allow_html=True,
                 )
             else:
                 st.info("Nenhuma divergencia detectada")
 
             if dip_info:
-                st.info(f"\U0001f4c9 {dip_info['explanation']}")
+                st.info(dip_info['explanation'])
 
     # Recomendacao
     if score_result and dip_info:
@@ -619,13 +808,13 @@ def render_deep_dive():
         st.markdown(f'<div class="recommendation-box">{rec}</div>', unsafe_allow_html=True)
 
     # Grafico principal
-    st.subheader("\U0001f4c8 Grafico com Indicadores")
+    st.markdown('<span class="section-label">Grafico com Indicadores</span>', unsafe_allow_html=True)
     fig = create_price_chart(df, asset_id.title())
     st.plotly_chart(fig, use_container_width=True)
 
     # Breakdown dos sinais
     if score_result:
-        st.subheader("\U0001f9e0 Detalhamento dos 10 Indicadores")
+        st.markdown('<span class="section-label">Detalhamento dos 10 Indicadores</span>', unsafe_allow_html=True)
         signals = score_result.get("signals", {})
         signal_list = list(signals.items())
 
@@ -636,8 +825,13 @@ def render_deep_dive():
             for j, (name, info) in enumerate(row_signals):
                 with cols[j]:
                     pct = info["points"] / info["max"] if info["max"] > 0 else 0
-                    emoji = "\U0001f7e2" if pct >= 0.6 else ("\U0001f7e1" if pct >= 0.3 else "\U0001f534")
-                    st.markdown(f"**{emoji} {name}**")
+                    if pct >= 0.6:
+                        dot_html = '<span class="dot dot-green"></span>'
+                    elif pct >= 0.3:
+                        dot_html = '<span class="dot dot-yellow"></span>'
+                    else:
+                        dot_html = '<span class="dot dot-red"></span>'
+                    st.markdown(f'{dot_html}<strong style="font-size:0.85rem;">{name}</strong>', unsafe_allow_html=True)
                     st.progress(pct)
                     st.caption(f"{info['points']}/{info['max']} pts")
                     with st.expander("Detalhe"):
@@ -648,7 +842,7 @@ def render_deep_dive():
     fib = df.attrs.get("fibonacci", {})
     fib_levels = fib.get("levels", {})
     if fib_levels:
-        st.subheader("\U0001f4d0 Niveis Fibonacci")
+        st.markdown('<span class="section-label">Niveis Fibonacci</span>', unsafe_allow_html=True)
         fib_df = pd.DataFrame([
             {"Nivel": label, "Preco": f"${price:.2f}",
              "Distancia": f"{((current_price - price) / current_price * 100):+.1f}%"}
@@ -661,13 +855,13 @@ def render_deep_dive():
 # PAGINA: Gestao de Risco
 # -------------------------------------------------------
 def render_risk():
-    st.title("\U0001f6e1 Gestao de Risco")
+    st.markdown('<h2 style="font-weight:700;color:#E8EDF5;letter-spacing:-0.5px;margin-bottom:4px;">Gestao de Risco</h2><p style="color:#4A5568;font-size:0.82rem;margin-top:0;margin-bottom:20px;">Calculadora de posicao, plano DCA e correlacao de ativos</p>', unsafe_allow_html=True)
 
-    tab1, tab2, tab3 = st.tabs(["\U0001f4b0 Calculadora de Posicao", "\U0001f4c9 Plano DCA", "\U0001f504 Correlacao"])
+    tab1, tab2, tab3 = st.tabs(["Calculadora de Posicao", "Plano DCA", "Correlacao"])
 
     # --- TAB 1: Calculadora de Posicao ---
     with tab1:
-        st.subheader("Calculadora de Tamanho de Posicao (ATR)")
+        st.markdown('<span class="section-label">Calculadora de Posicao baseada em ATR</span>', unsafe_allow_html=True)
         st.info(
             "Esta calculadora usa o ATR (Average True Range) para definir stop-loss automatico "
             "e calcular quanto investir sem arriscar demais do seu portfolio."
@@ -732,7 +926,7 @@ def render_risk():
 
     # --- TAB 2: Plano DCA ---
     with tab2:
-        st.subheader("Plano DCA (Dollar Cost Averaging)")
+        st.markdown('<span class="section-label">Plano DCA — Dollar Cost Averaging</span>', unsafe_allow_html=True)
         st.info(
             "O DCA divide sua compra em parcelas em niveis de preco diferentes. "
             "Se o preco cair, voce compra mais barato automaticamente. Reduz risco de comprar no topo."
@@ -790,7 +984,7 @@ def render_risk():
 
     # --- TAB 3: Correlacao ---
     with tab3:
-        st.subheader("Matriz de Correlacao")
+        st.markdown('<span class="section-label">Matriz de Correlacao entre Ativos</span>', unsafe_allow_html=True)
         st.info(
             "Mostra quais ativos se movem juntos. Correlacao alta (>0.8) = risco duplicado. "
             "Correlacao baixa (<0.3) = boa diversificacao."
@@ -858,7 +1052,7 @@ def render_risk():
 # PAGINA: Alertas
 # -------------------------------------------------------
 def render_alerts():
-    st.title("\U0001f514 Central de Alertas")
+    st.markdown('<h2 style="font-weight:700;color:#E8EDF5;letter-spacing:-0.5px;margin-bottom:4px;">Central de Alertas</h2><p style="color:#4A5568;font-size:0.82rem;margin-top:0;margin-bottom:20px;">Sinais de compra, venda e divergencias detectadas agora</p>', unsafe_allow_html=True)
 
     scores, all_assets = analyze_all_assets()
 
@@ -906,50 +1100,57 @@ def render_alerts():
 
     # Divergencias (sinal mais forte)
     if div_alerts:
-        st.subheader(f"\U0001f4a1 Divergencias Bullish Detectadas ({len(div_alerts)} ativos)")
+        st.markdown(f'<span class="section-label">Divergencias Bullish Detectadas &mdash; {len(div_alerts)} ativo(s)</span>', unsafe_allow_html=True)
         for alert in div_alerts:
             conf = alert.get("confluence", {})
             st.markdown(f"""
             <div class="divergence-box">
-                <strong>{alert['name']}</strong> - Score: {alert['score']}/100 |
-                Confluencia: {conf.get('agree_buy', 0)}/{conf.get('total', 10)}<br>
-                Preco: {alert['price']} | 24h: {alert['change_24h']}<br>
-                DIVERGENCIA BULLISH - Sinal de reversao para alta!
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+                    <strong style="font-size:0.95rem;">{alert['name']}</strong>
+                    <span style="font-size:0.78rem;font-weight:400;color:#8B9AB0;">Score {alert['score']}/100 &nbsp;|&nbsp; {conf.get('agree_buy',0)}/{conf.get('total',10)} indicadores</span>
+                </div>
+                <div style="font-size:0.8rem;font-weight:400;color:#8B9AB0;">{alert['price']} &nbsp;&mdash;&nbsp; {alert['change_24h']} (24h)</div>
+                <div style="margin-top:6px;font-size:0.82rem;">DIVERGENCIA BULLISH &mdash; Sinal de possivel reversao para alta</div>
             </div>
             """, unsafe_allow_html=True)
 
     # Compra forte
-    st.subheader(f"\U0001f7e2 Zona de Compra Forte ({len(buy_alerts)} ativos)")
+    st.markdown(f'<span class="section-label">Zona de Compra Forte &mdash; {len(buy_alerts)} ativo(s)</span>', unsafe_allow_html=True)
     if buy_alerts:
         for alert in sorted(buy_alerts, key=lambda x: x["score"], reverse=True):
             conf = alert.get("confluence", {})
             st.markdown(f"""
             <div class="alert-buy">
-                <strong>{alert['name']}</strong> - Score: {alert['score']}/100 |
-                Confluencia: {conf.get('agree_buy', 0)}/{conf.get('total', 10)}<br>
-                Preco: {alert['price']} | 24h: {alert['change_24h']}<br>
-                {alert['explanation']}
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+                    <strong style="font-size:0.95rem;color:#E8EDF5;">{alert['name']}</strong>
+                    <span style="font-size:0.78rem;color:#4A5568;">Score {alert['score']}/100 &nbsp;|&nbsp; {conf.get('agree_buy',0)}/{conf.get('total',10)} indicadores</span>
+                </div>
+                <div style="font-size:0.8rem;color:#4A5568;margin-bottom:6px;">{alert['price']} &nbsp;&mdash;&nbsp; {alert['change_24h']} (24h)</div>
+                <div style="font-size:0.83rem;color:#8B9AB0;">{alert['explanation']}</div>
             </div>
             """, unsafe_allow_html=True)
     else:
         st.info("Nenhum ativo em zona de compra forte no momento.")
 
     # Venda
-    st.subheader(f"\U0001f534 Zona de Alerta/Venda ({len(sell_alerts)} ativos)")
+    st.markdown(f'<span class="section-label">Zona de Alerta / Venda &mdash; {len(sell_alerts)} ativo(s)</span>', unsafe_allow_html=True)
     if sell_alerts:
         for alert in sorted(sell_alerts, key=lambda x: x["score"]):
             st.markdown(f"""
             <div class="alert-sell">
-                <strong>{alert['name']}</strong> - Score: {alert['score']}/100<br>
-                Preco: {alert['price']} | 24h: {alert['change_24h']}<br>
-                {alert['explanation']}
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+                    <strong style="font-size:0.95rem;color:#E8EDF5;">{alert['name']}</strong>
+                    <span style="font-size:0.78rem;color:#4A5568;">Score {alert['score']}/100</span>
+                </div>
+                <div style="font-size:0.8rem;color:#4A5568;margin-bottom:6px;">{alert['price']} &nbsp;&mdash;&nbsp; {alert['change_24h']} (24h)</div>
+                <div style="font-size:0.83rem;color:#8B9AB0;">{alert['explanation']}</div>
             </div>
             """, unsafe_allow_html=True)
     else:
         st.info("Nenhum ativo em zona de venda no momento.")
 
     # Observacao
-    st.subheader(f"\U0001f7e1 Em Observacao ({len(watch_alerts)} ativos)")
+    st.markdown(f'<span class="section-label">Em Observacao &mdash; {len(watch_alerts)} ativo(s)</span>', unsafe_allow_html=True)
     if watch_alerts:
         for alert in sorted(watch_alerts, key=lambda x: x["score"], reverse=True):
             conf = alert.get("confluence", {})
@@ -964,11 +1165,11 @@ def render_alerts():
 # PAGINA: Noticias
 # -------------------------------------------------------
 def render_news():
-    st.title("\U0001f4f0 Noticias e Sentimento do Mercado")
+    st.markdown('<h2 style="font-weight:700;color:#E8EDF5;letter-spacing:-0.5px;margin-bottom:4px;">Noticias e Sentimento</h2><p style="color:#4A5568;font-size:0.82rem;margin-top:0;margin-bottom:20px;">Fear & Greed Index historico e manchetes com analise de sentimento</p>', unsafe_allow_html=True)
 
     fg_df = fetch_fear_greed()
     if not fg_df.empty:
-        st.subheader("Fear & Greed Index - Historico (30 dias)")
+        st.markdown('<span class="section-label">Fear & Greed Index — Historico 30 dias</span>', unsafe_allow_html=True)
         fig = go.Figure()
         fig.add_trace(go.Scatter(
             x=fg_df["date"], y=fg_df["value"],
@@ -986,7 +1187,7 @@ def render_news():
         )
         st.plotly_chart(fig, use_container_width=True)
 
-    st.subheader("Ultimas Noticias")
+    st.markdown('<span class="section-label">Ultimas Noticias</span>', unsafe_allow_html=True)
     news = fetch_news()
 
     if news:
@@ -995,15 +1196,15 @@ def render_news():
         neu = sum(1 for n in news if n["sentiment_label"] == "Neutro")
 
         c1, c2, c3 = st.columns(3)
-        c1.metric("\U0001f7e2 Positivas", pos)
-        c2.metric("\u26aa Neutras", neu)
-        c3.metric("\U0001f534 Negativas", neg)
+        c1.metric("Positivas", pos)
+        c2.metric("Neutras", neu)
+        c3.metric("Negativas", neg)
 
         for article in news:
-            icon = {
-                "Positivo": "\U0001f7e2", "Negativo": "\U0001f534", "Neutro": "\u26aa",
-            }.get(article["sentiment_label"], "\u26aa")
-            with st.expander(f"{icon} {article['title'][:100]}"):
+            sentiment_tag = {
+                "Positivo": "[ + ]", "Negativo": "[ - ]", "Neutro": "[ ~ ]",
+            }.get(article["sentiment_label"], "[ ~ ]")
+            with st.expander(f"{sentiment_tag}  {article['title'][:95]}"):
                 st.markdown(f"**Fonte:** {article['source']}")
                 st.markdown(f"**Sentimento:** {article['sentiment_label']}")
                 st.markdown(f"**Data:** {article['date']}")
@@ -1017,7 +1218,7 @@ def render_news():
 # PAGINA: Portfolio
 # -------------------------------------------------------
 def render_portfolio():
-    st.title("\U0001f4bc Meu Portfolio")
+    st.markdown('<h2 style="font-weight:700;color:#E8EDF5;letter-spacing:-0.5px;margin-bottom:4px;">Meu Portfolio</h2><p style="color:#4A5568;font-size:0.82rem;margin-top:0;margin-bottom:20px;">Acompanhe valor total, P&amp;L e alocacao dos seus ativos</p>', unsafe_allow_html=True)
     st.info("Adicione seus ativos para acompanhar valor total, P&L e alocacao.")
 
     if "portfolio" not in st.session_state:
@@ -1094,7 +1295,7 @@ def render_portfolio():
         fig.update_layout(title="Alocacao", template="plotly_dark", paper_bgcolor="#0e1117", height=350)
         st.plotly_chart(fig, use_container_width=True)
 
-    if st.button("\U0001f5d1 Limpar Portfolio"):
+    if st.button("Limpar Portfolio"):
         st.session_state.portfolio = {}
         st.rerun()
 
@@ -1102,15 +1303,15 @@ def render_portfolio():
 # -------------------------------------------------------
 # Roteamento
 # -------------------------------------------------------
-if page == "\U0001f3e0 Visao Geral":
+if page == "Visao Geral":
     render_overview()
-elif page == "\U0001f50d Analise Detalhada":
+elif page == "Analise Detalhada":
     render_deep_dive()
-elif page == "\U0001f6e1 Gestao de Risco":
+elif page == "Gestao de Risco":
     render_risk()
-elif page == "\U0001f514 Alertas":
+elif page == "Alertas":
     render_alerts()
-elif page == "\U0001f4f0 Noticias":
+elif page == "Noticias":
     render_news()
-elif page == "\U0001f4bc Portfolio":
+elif page == "Portfolio":
     render_portfolio()
