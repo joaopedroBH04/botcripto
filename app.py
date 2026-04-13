@@ -47,7 +47,23 @@ st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
-* { font-family: 'Inter', sans-serif !important; }
+/* ─── CRITICO: aplicar Inter SEM sobrescrever Material Icons do Streamlit ─── */
+/* O !important no * quebra as ligaduras de icone, causando "_arrow_right" como texto */
+body, .stApp { font-family: 'Inter', sans-serif; }
+p, span:not([class*="material"]), div:not([class*="material"]), h1, h2, h3, h4, h5, h6,
+button, label, input, select, textarea, a, td, th, li,
+[data-testid="stSidebar"] *, [data-testid="stMainBlockContainer"] *,
+[data-baseweb], .stMarkdown, .stText {
+    font-family: 'Inter', sans-serif;
+}
+/* Restaurar Material Icons (necessario para expanders, botoes, tabs) */
+.material-icons, .material-icons-round, .material-icons-outlined,
+[class*="material-icons"] {
+    font-family: 'Material Icons', 'Material Icons Round', 'Material Icons Outlined' !important;
+    font-feature-settings: 'liga' !important;
+    -webkit-font-feature-settings: 'liga' !important;
+    text-rendering: optimizeLegibility !important;
+}
 
 /* ─── Background ─── */
 .stApp { background: #060B14; }
@@ -270,8 +286,44 @@ div[data-testid="stSidebar"] .stButton > button:hover {
 }
 
 /* ─── Abas ─── */
-[data-baseweb="tab-list"] { background: #090F1C !important; border-radius: 8px; gap: 4px; }
-[data-baseweb="tab"] { border-radius: 6px !important; font-size: 0.84rem !important; }
+[data-baseweb="tab-list"] {
+    background: #090F1C !important;
+    border-radius: 10px !important;
+    gap: 6px !important;
+    padding: 6px !important;
+    border: 1px solid #1A2A40 !important;
+}
+[data-baseweb="tab"] {
+    border-radius: 7px !important;
+    font-size: 0.84rem !important;
+    padding: 8px 20px !important;
+    font-weight: 500 !important;
+    letter-spacing: 0.2px !important;
+    color: #506070 !important;
+    transition: all 0.15s !important;
+}
+[data-baseweb="tab"][aria-selected="true"] {
+    background: rgba(0,229,195,0.1) !important;
+    color: #00E5C3 !important;
+    font-weight: 600 !important;
+}
+
+/* ─── Animacoes ─── */
+@keyframes pulse-glow {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(74,158,255,0.35); }
+    50%       { box-shadow: 0 0 0 6px rgba(74,158,255,0); }
+}
+@keyframes live-blink {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0.3; }
+}
+@keyframes slide-in {
+    from { opacity: 0; transform: translateY(-4px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+.divergence-box { animation: pulse-glow 2.5s infinite, slide-in 0.3s ease; }
+.alert-buy      { animation: slide-in 0.25s ease; }
+.alert-sell     { animation: slide-in 0.25s ease; }
 
 /* ─── Expander ─── */
 [data-testid="stExpander"] { border: 1px solid #1A2A40 !important; border-radius: 8px !important; }
@@ -290,12 +342,45 @@ hr { border-color: #1A2A40 !important; margin: 20px 0 !important; }
 
 /* ─── Label de secao ─── */
 .section-label {
-    font-size: 0.7rem;
+    font-size: 0.68rem;
     text-transform: uppercase;
-    letter-spacing: 1.5px;
-    color: #4A5568;
-    margin: 24px 0 10px 0;
+    letter-spacing: 2px;
+    color: #2E4055;
+    margin: 28px 0 12px 0;
     display: block;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #0F1E2E;
+}
+
+/* ─── Header de pagina com barra lateral ─── */
+.page-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    margin-bottom: 28px;
+    animation: slide-in 0.3s ease;
+}
+.page-header-bar {
+    width: 3px;
+    height: 36px;
+    background: linear-gradient(180deg, #00E5C3, #4A9EFF);
+    border-radius: 2px;
+    flex-shrink: 0;
+    margin-top: 3px;
+}
+.page-header h2 {
+    font-size: 1.55rem;
+    font-weight: 700;
+    color: #E8EDF5;
+    letter-spacing: -0.5px;
+    margin: 0 0 4px 0;
+    line-height: 1.2;
+}
+.page-header p {
+    font-size: 0.8rem;
+    color: #2E4055;
+    margin: 0;
+    letter-spacing: 0.3px;
 }
 
 /* ─── Alerts nativos Streamlit ─── */
@@ -307,12 +392,21 @@ hr { border-color: #1A2A40 !important; margin: 20px 0 !important; }
 # Sidebar
 # -------------------------------------------------------
 st.sidebar.markdown("""
-<div style="padding:18px 0 20px 0; border-bottom:1px solid #1A2A40; margin-bottom:20px;">
-    <div style="font-size:1.55rem; font-weight:700; background:linear-gradient(135deg,#00E5C3,#4A9EFF);
+<div style="padding:20px 4px 18px 4px; border-bottom:1px solid #0F1E2E; margin-bottom:16px;">
+    <div style="font-size:1.6rem; font-weight:700;
+                background:linear-gradient(135deg,#00E5C3 0%,#4A9EFF 100%);
                 -webkit-background-clip:text; -webkit-text-fill-color:transparent;
-                background-clip:text; letter-spacing:-0.5px;">BotCripto</div>
-    <div style="font-size:0.68rem; color:#4A5568; text-transform:uppercase;
-                letter-spacing:1.8px; margin-top:4px;">Monitor Financeiro v2</div>
+                background-clip:text; letter-spacing:-0.8px; line-height:1;">BotCripto</div>
+    <div style="font-size:0.6rem; color:#2E4055; text-transform:uppercase;
+                letter-spacing:2.2px; margin-top:5px; margin-bottom:10px;">Monitor Financeiro v2</div>
+    <div style="display:flex;align-items:center;gap:7px;">
+        <div style="width:6px;height:6px;background:#00E5C3;border-radius:50%;
+                    flex-shrink:0;
+                    animation:live-blink 1.8s ease-in-out infinite;
+                    box-shadow:0 0 6px rgba(0,229,195,0.8);"></div>
+        <span style="font-size:0.62rem;color:#2E4055;text-transform:uppercase;
+                     letter-spacing:1.5px;">Dados ao vivo</span>
+    </div>
 </div>
 """, unsafe_allow_html=True)
 
@@ -322,12 +416,12 @@ st.sidebar.markdown("""
 """, unsafe_allow_html=True)
 
 _nav_options = {
-    "01  Visao Geral":       "Visao Geral",
-    "02  Analise Detalhada": "Analise Detalhada",
-    "03  Gestao de Risco":   "Gestao de Risco",
-    "04  Alertas":           "Alertas",
-    "05  Noticias":          "Noticias",
-    "06  Portfolio":         "Portfolio",
+    "▸  01   Visao Geral":       "Visao Geral",
+    "▸  02   Analise Detalhada": "Analise Detalhada",
+    "▸  03   Gestao de Risco":   "Gestao de Risco",
+    "▸  04   Alertas":           "Alertas",
+    "▸  05   Noticias":          "Noticias",
+    "▸  06   Portfolio":         "Portfolio",
 }
 _nav_descs = {
     "Visao Geral":       "Panorama de todos os ativos",
@@ -706,7 +800,12 @@ def analyze_all_assets():
 # PAGINA: Visao Geral
 # -------------------------------------------------------
 def render_overview():
-    st.markdown('<h2 style="font-weight:700;color:#E8EDF5;letter-spacing:-0.5px;margin-bottom:4px;">Visao Geral do Mercado</h2><p style="color:#4A5568;font-size:0.82rem;margin-top:0;margin-bottom:20px;">Panorama em tempo real — criptomoedas, acoes e sentimento do mercado</p>', unsafe_allow_html=True)
+    st.markdown("""
+<div class="page-header">
+    <div class="page-header-bar"></div>
+    <div><h2>Visao Geral do Mercado</h2>
+    <p>Panorama em tempo real &mdash; criptomoedas, acoes e sentimento</p></div>
+</div>""", unsafe_allow_html=True)
 
     # Pulse do mercado
     col1, col2, col3 = st.columns(3)
@@ -824,7 +923,12 @@ def render_overview():
 # PAGINA: Analise Detalhada
 # -------------------------------------------------------
 def render_deep_dive():
-    st.markdown('<h2 style="font-weight:700;color:#E8EDF5;letter-spacing:-0.5px;margin-bottom:4px;">Analise Detalhada</h2><p style="color:#4A5568;font-size:0.82rem;margin-top:0;margin-bottom:20px;">10 indicadores tecnicos + gestao de risco por ativo</p>', unsafe_allow_html=True)
+    st.markdown("""
+<div class="page-header">
+    <div class="page-header-bar"></div>
+    <div><h2>Analise Detalhada</h2>
+    <p>10 indicadores tecnicos + scoring + gestao de risco por ativo</p></div>
+</div>""", unsafe_allow_html=True)
 
     col1, col2 = st.columns(2)
     with col1:
@@ -940,22 +1044,27 @@ def render_deep_dive():
                     else:
                         bar_color = "#FF4757"
                         dot_html = '<span class="dot dot-red"></span>'
+                    signal_text = info.get('signal', '').replace('<','&lt;').replace('>','&gt;')
+                    value_text  = str(info.get('value', 'N/A'))
                     st.markdown(f"""
-<div style="background:#0F1923;border:1px solid #1A2A40;border-radius:8px;
-            padding:12px 14px;margin:4px 0;">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-        <span style="font-size:0.78rem;font-weight:600;color:#C0CDD8;">{dot_html}{name}</span>
-        <span style="font-size:0.72rem;color:#4A5568;font-weight:500;">{info['points']}/{info['max']}</span>
+<div style="background:#0F1923;border:1px solid #1A2A40;border-radius:10px;
+            padding:14px 16px;margin:4px 0;height:100%;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:9px;">
+        <span style="font-size:0.78rem;font-weight:600;color:#C0CDD8;display:flex;align-items:center;gap:5px;">{dot_html}{name}</span>
+        <span style="font-size:0.72rem;color:#2E4055;font-weight:600;
+                     background:#0A1520;padding:2px 7px;border-radius:10px;
+                     border:1px solid #1A2A40;">{info['points']}/{info['max']}</span>
     </div>
-    <div style="background:#1A2A40;border-radius:3px;height:4px;overflow:hidden;">
+    <div style="background:#0A1520;border-radius:3px;height:4px;overflow:hidden;margin-bottom:10px;">
         <div style="background:{bar_color};width:{pct*100:.0f}%;height:100%;border-radius:3px;
-                    box-shadow:0 0 6px {bar_color}55;"></div>
+                    box-shadow:0 0 8px {bar_color}44;"></div>
     </div>
+    <div style="font-size:0.7rem;color:#2E4055;margin-bottom:3px;">
+        Valor: <span style="color:#506070;">{value_text}</span>
+    </div>
+    <div style="font-size:0.72rem;color:#3A5060;line-height:1.5;">{signal_text}</div>
 </div>
 """, unsafe_allow_html=True)
-                    with st.expander("Detalhe"):
-                        st.markdown(f"**Valor:** {info.get('value', 'N/A')}")
-                        st.markdown(info['signal'])
 
     # Niveis Fibonacci
     fib = df.attrs.get("fibonacci", {})
@@ -974,7 +1083,12 @@ def render_deep_dive():
 # PAGINA: Gestao de Risco
 # -------------------------------------------------------
 def render_risk():
-    st.markdown('<h2 style="font-weight:700;color:#E8EDF5;letter-spacing:-0.5px;margin-bottom:4px;">Gestao de Risco</h2><p style="color:#4A5568;font-size:0.82rem;margin-top:0;margin-bottom:20px;">Calculadora de posicao, plano DCA e correlacao de ativos</p>', unsafe_allow_html=True)
+    st.markdown("""
+<div class="page-header">
+    <div class="page-header-bar"></div>
+    <div><h2>Gestao de Risco</h2>
+    <p>Calculadora de posicao baseada em ATR, plano DCA e correlacao de ativos</p></div>
+</div>""", unsafe_allow_html=True)
 
     tab1, tab2, tab3 = st.tabs(["Calculadora de Posicao", "Plano DCA", "Correlacao"])
 
@@ -1031,17 +1145,24 @@ def render_risk():
                 c2.metric("Alvo 2 (23.6%)", f"${risk['take_profit_2']}")
                 c3.metric("Alvo 3 (Topo)", f"${risk['take_profit_3']}")
 
-                # Explicacao
-                with st.expander("Como interpretar"):
-                    st.markdown(f"""
-                    **O que significa:**
-                    - O ATR de ${risk['atr']:.2f} ({risk['atr_percentual']}%) indica a volatilidade diaria media
-                    - O stop-loss em ${risk['stop_loss']:.2f} esta a 2x ATR do preco atual
-                    - Se o preco cair ate o stop-loss, voce perde no maximo ${risk['risco_maximo']:.2f} ({risk_pct}% do portfolio)
-                    - Para isso, compre no maximo {risk['tamanho_posicao']:.4f} unidades (${risk['valor_posicao']:.2f})
-
-                    **Regra de ouro:** Nunca arrisque mais de 2% do portfolio em uma unica operacao.
-                    """)
+                # Explicacao inline (sem expander para evitar bug de icone)
+                st.markdown(f"""
+<div style="background:#090F1C;border:1px solid #0F1E2E;border-radius:10px;
+            padding:16px 20px;margin-top:12px;">
+    <div style="font-size:0.68rem;color:#2E4055;text-transform:uppercase;
+                letter-spacing:1.5px;margin-bottom:10px;">Como interpretar</div>
+    <div style="font-size:0.82rem;color:#3A5060;line-height:1.8;">
+        &mdash; O ATR de <span style="color:#8B9AB0;">${risk['atr']:.2f}</span> ({risk['atr_percentual']}%) indica a volatilidade diaria media<br>
+        &mdash; O stop-loss em <span style="color:#FF4757;">${risk['stop_loss']:.2f}</span> esta a 2&times; ATR do preco atual<br>
+        &mdash; Se o preco cair ate o stop-loss, voce perde no maximo <span style="color:#FF4757;">${risk['risco_maximo']:.2f}</span> ({risk_pct}% do portfolio)<br>
+        &mdash; Para isso, compre no maximo <span style="color:#8B9AB0;">{risk['tamanho_posicao']:.4f} unidades</span> (${risk['valor_posicao']:.2f})
+    </div>
+    <div style="margin-top:10px;padding-top:10px;border-top:1px solid #0F1E2E;
+                font-size:0.78rem;color:#2E4055;">
+        Regra de ouro: nunca arrisque mais de 2% do portfolio em uma unica operacao.
+    </div>
+</div>
+""", unsafe_allow_html=True)
 
     # --- TAB 2: Plano DCA ---
     with tab2:
@@ -1171,7 +1292,12 @@ def render_risk():
 # PAGINA: Alertas
 # -------------------------------------------------------
 def render_alerts():
-    st.markdown('<h2 style="font-weight:700;color:#E8EDF5;letter-spacing:-0.5px;margin-bottom:4px;">Central de Alertas</h2><p style="color:#4A5568;font-size:0.82rem;margin-top:0;margin-bottom:20px;">Sinais de compra, venda e divergencias detectadas agora</p>', unsafe_allow_html=True)
+    st.markdown("""
+<div class="page-header">
+    <div class="page-header-bar"></div>
+    <div><h2>Central de Alertas</h2>
+    <p>Sinais de compra, venda e divergencias bullish/bearish em tempo real</p></div>
+</div>""", unsafe_allow_html=True)
 
     scores, all_assets = analyze_all_assets()
 
@@ -1284,7 +1410,12 @@ def render_alerts():
 # PAGINA: Noticias
 # -------------------------------------------------------
 def render_news():
-    st.markdown('<h2 style="font-weight:700;color:#E8EDF5;letter-spacing:-0.5px;margin-bottom:4px;">Noticias e Sentimento</h2><p style="color:#4A5568;font-size:0.82rem;margin-top:0;margin-bottom:20px;">Fear & Greed Index historico e manchetes com analise de sentimento</p>', unsafe_allow_html=True)
+    st.markdown("""
+<div class="page-header">
+    <div class="page-header-bar"></div>
+    <div><h2>Noticias e Sentimento</h2>
+    <p>Fear &amp; Greed Index historico e manchetes com analise de sentimento</p></div>
+</div>""", unsafe_allow_html=True)
 
     fg_df = fetch_fear_greed()
     if not fg_df.empty:
@@ -1319,16 +1450,34 @@ def render_news():
         c2.metric("Neutras", neu)
         c3.metric("Negativas", neg)
 
+        news_colors = {
+            "Positivo": ("#00E5C3", "rgba(0,229,195,0.06)", "rgba(0,229,195,0.18)", "+"),
+            "Negativo": ("#FF4757", "rgba(255,71,87,0.06)",  "rgba(255,71,87,0.18)",  "−"),
+            "Neutro":   ("#4A9EFF", "rgba(74,158,255,0.05)", "rgba(74,158,255,0.15)", "~"),
+        }
         for article in news:
-            sentiment_tag = {
-                "Positivo": "[ + ]", "Negativo": "[ - ]", "Neutro": "[ ~ ]",
-            }.get(article["sentiment_label"], "[ ~ ]")
-            with st.expander(f"{sentiment_tag}  {article['title'][:95]}"):
-                st.markdown(f"**Fonte:** {article['source']}")
-                st.markdown(f"**Sentimento:** {article['sentiment_label']}")
-                st.markdown(f"**Data:** {article['date']}")
-                if article["url"]:
-                    st.markdown(f"[Ler noticia completa]({article['url']})")
+            color, bg, border, symbol = news_colors.get(
+                article["sentiment_label"],
+                ("#4A9EFF", "rgba(74,158,255,0.05)", "rgba(74,158,255,0.15)", "~")
+            )
+            link_html = f'<a href="{article["url"]}" target="_blank" style="color:{color};font-size:0.75rem;text-decoration:none;font-weight:600;letter-spacing:0.3px;">Ler noticia &rarr;</a>' if article["url"] else ""
+            st.markdown(f"""
+<div style="background:{bg};border:1px solid {border};border-left:3px solid {color};
+            border-radius:10px;padding:14px 18px;margin:6px 0;">
+    <div style="display:flex;align-items:flex-start;gap:10px;">
+        <span style="font-size:0.7rem;font-weight:700;color:{color};background:rgba(255,255,255,0.05);
+                     border:1px solid {border};border-radius:4px;padding:2px 6px;
+                     flex-shrink:0;margin-top:2px;">{symbol}</span>
+        <div style="flex:1;">
+            <div style="font-size:0.86rem;color:#C0CDD8;font-weight:500;line-height:1.4;margin-bottom:6px;">{article['title']}</div>
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+                <span style="font-size:0.72rem;color:#2E4055;">{article['source']} &nbsp;·&nbsp; {article['date']}</span>
+                {link_html}
+            </div>
+        </div>
+    </div>
+</div>
+""", unsafe_allow_html=True)
     else:
         st.info("Nao foi possivel carregar noticias.")
 
@@ -1337,7 +1486,12 @@ def render_news():
 # PAGINA: Portfolio
 # -------------------------------------------------------
 def render_portfolio():
-    st.markdown('<h2 style="font-weight:700;color:#E8EDF5;letter-spacing:-0.5px;margin-bottom:4px;">Meu Portfolio</h2><p style="color:#4A5568;font-size:0.82rem;margin-top:0;margin-bottom:20px;">Acompanhe valor total, P&amp;L e alocacao dos seus ativos</p>', unsafe_allow_html=True)
+    st.markdown("""
+<div class="page-header">
+    <div class="page-header-bar"></div>
+    <div><h2>Meu Portfolio</h2>
+    <p>Acompanhe valor total, P&amp;L e alocacao dos seus ativos</p></div>
+</div>""", unsafe_allow_html=True)
     st.info("Adicione seus ativos para acompanhar valor total, P&L e alocacao.")
 
     if "portfolio" not in st.session_state:
