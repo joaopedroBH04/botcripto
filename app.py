@@ -211,9 +211,63 @@ footer { visibility: hidden; }
     box-shadow: 0 6px 20px rgba(0, 229, 195, 0.28) !important;
 }
 
-/* ─── Sidebar ─── */
-.stRadio label { font-size: 0.87rem !important; color: #8B9AB0 !important; }
-.stRadio [data-baseweb="radio"] { padding: 6px 0 !important; }
+/* ─── Fix: esconder botao de colapso (keyboard_double bug) ─── */
+[data-testid="stSidebarCollapseButton"] { display: none !important; }
+
+/* ─── Navegacao customizada no sidebar ─── */
+div[data-testid="stSidebar"] .stRadio > div { gap: 2px !important; margin-top: 4px !important; }
+
+/* Item de navegacao — base */
+div[data-testid="stSidebar"] .stRadio > div > label {
+    display: flex !important;
+    align-items: center !important;
+    padding: 9px 12px 9px 14px !important;
+    border-radius: 8px !important;
+    border-left: 2px solid transparent !important;
+    cursor: pointer !important;
+    transition: background 0.15s, border-color 0.15s, color 0.15s !important;
+    font-size: 0.855rem !important;
+    font-weight: 400 !important;
+    color: #506070 !important;
+    letter-spacing: 0.3px !important;
+    margin: 1px 0 !important;
+    white-space: nowrap !important;
+}
+/* Hover */
+div[data-testid="stSidebar"] .stRadio > div > label:hover {
+    background: rgba(0,229,195,0.05) !important;
+    border-left-color: rgba(0,229,195,0.35) !important;
+    color: #A0B5C5 !important;
+}
+/* Ativo — detecta o radio checked via :has() */
+div[data-testid="stSidebar"] .stRadio > div > label:has(input:checked) {
+    background: rgba(0,229,195,0.09) !important;
+    border-left-color: #00E5C3 !important;
+    color: #E8EDF5 !important;
+    font-weight: 600 !important;
+}
+/* Esconder o circulo do radio nativo */
+div[data-testid="stSidebar"] .stRadio [data-baseweb="radio"] > div:first-child { display: none !important; }
+div[data-testid="stSidebar"] .stRadio [data-baseweb="radio"] { gap: 0 !important; }
+
+/* Botao de atualizar no sidebar — estilo diferente do botao principal */
+div[data-testid="stSidebar"] .stButton > button {
+    background: rgba(0,229,195,0.06) !important;
+    color: #00E5C3 !important;
+    border: 1px solid rgba(0,229,195,0.18) !important;
+    font-weight: 500 !important;
+    font-size: 0.83rem !important;
+    letter-spacing: 0.3px !important;
+    width: 100% !important;
+    box-shadow: none !important;
+    transform: none !important;
+    border-radius: 8px !important;
+}
+div[data-testid="stSidebar"] .stButton > button:hover {
+    background: rgba(0,229,195,0.12) !important;
+    transform: none !important;
+    box-shadow: none !important;
+}
 
 /* ─── Abas ─── */
 [data-baseweb="tab-list"] { background: #090F1C !important; border-radius: 8px; gap: 4px; }
@@ -262,18 +316,39 @@ st.sidebar.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-st.sidebar.markdown('<span style="font-size:0.68rem;color:#4A5568;text-transform:uppercase;letter-spacing:1.2px;">Navegacao</span>', unsafe_allow_html=True)
-page = st.sidebar.radio(
-    "Navegacao",
-    [
-        "Visao Geral",
-        "Analise Detalhada",
-        "Gestao de Risco",
-        "Alertas",
-        "Noticias",
-        "Portfolio",
-    ],
+st.sidebar.markdown("""
+<div style="font-size:0.62rem;color:#2A3A50;text-transform:uppercase;
+            letter-spacing:2px;margin-bottom:6px;padding:0 4px;">Menu</div>
+""", unsafe_allow_html=True)
+
+_nav_options = {
+    "01  Visao Geral":       "Visao Geral",
+    "02  Analise Detalhada": "Analise Detalhada",
+    "03  Gestao de Risco":   "Gestao de Risco",
+    "04  Alertas":           "Alertas",
+    "05  Noticias":          "Noticias",
+    "06  Portfolio":         "Portfolio",
+}
+_nav_descs = {
+    "Visao Geral":       "Panorama de todos os ativos",
+    "Analise Detalhada": "10 indicadores tecnicos",
+    "Gestao de Risco":   "Posicao, DCA e correlacao",
+    "Alertas":           "Sinais ativos agora",
+    "Noticias":          "Sentimento do mercado",
+    "Portfolio":         "Seus ativos e P&L",
+}
+_selected_nav = st.sidebar.radio(
+    "nav",
+    list(_nav_options.keys()),
     label_visibility="collapsed",
+)
+page = _nav_options[_selected_nav]
+
+# Descricao da pagina ativa
+st.sidebar.markdown(
+    f'<div style="font-size:0.75rem;color:#2E4055;padding:4px 14px 12px 14px;'
+    f'border-bottom:1px solid #0F1E2E;">{_nav_descs[page]}</div>',
+    unsafe_allow_html=True,
 )
 
 st.sidebar.markdown("---")
@@ -281,12 +356,19 @@ if st.sidebar.button("Atualizar Dados"):
     st.cache_data.clear()
     st.rerun()
 
-st.sidebar.markdown("---")
-st.sidebar.caption(
-    "Aviso: Este sistema e apenas informativo. "
-    "Nao constitui recomendacao de investimento. "
-    "Sempre faca sua propria analise."
-)
+st.sidebar.markdown("""
+<div style="margin-top:24px;padding:14px;background:#090F1C;border-radius:8px;
+            border:1px solid #0F1E2E;">
+    <div style="font-size:0.65rem;color:#2E4055;text-transform:uppercase;
+                letter-spacing:1.2px;margin-bottom:6px;">Aviso Legal</div>
+    <div style="font-size:0.72rem;color:#2A3A50;line-height:1.6;">
+        Este sistema e apenas informativo e nao constitui recomendacao de investimento.
+        Sempre faca sua propria analise antes de operar.
+    </div>
+</div>
+<div style="margin-top:14px;font-size:0.62rem;color:#1A2A40;text-align:center;
+            letter-spacing:0.5px;">BotCripto v2 &nbsp;·&nbsp; open source</div>
+""", unsafe_allow_html=True)
 
 
 # -------------------------------------------------------
@@ -710,8 +792,32 @@ def render_overview():
             sr = row.get("_score_result")
             di = row.get("_dip_info")
             if sr and di:
+                score_val = sr.get("score", 0)
+                conf = sr.get("confluence", {})
                 rec = generate_recommendation(sr, di, row["Ativo"])
-                st.markdown(f'<div class="recommendation-box">{rec}</div>', unsafe_allow_html=True)
+                st.markdown(f"""
+<div style="background:#0F1923;border:1px solid #1A2A40;border-radius:12px;
+            padding:16px 18px 12px 18px;height:100%;">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;">
+        <div>
+            <div style="font-weight:700;font-size:0.88rem;color:#E8EDF5;margin-bottom:2px;">{row['Ativo']}</div>
+            <div style="font-size:0.72rem;color:#2E4055;">{row['Preco']} &nbsp;·&nbsp; {row['24h']} (24h)</div>
+        </div>
+        {score_badge(score_val)}
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+        <div>
+            <div style="font-size:0.68rem;color:#2E4055;text-transform:uppercase;letter-spacing:1px;">Score</div>
+            <div style="font-size:1.6rem;font-weight:700;color:#00E5C3;line-height:1;">{score_val}<span style="font-size:0.8rem;color:#2E4055;font-weight:400;">/100</span></div>
+        </div>
+        <div style="text-align:right;">
+            <div style="font-size:0.68rem;color:#2E4055;text-transform:uppercase;letter-spacing:1px;">Confluencia</div>
+            <div style="font-size:1.2rem;font-weight:700;color:#4A9EFF;">{conf.get('agree_buy',0)}<span style="font-size:0.8rem;color:#2E4055;font-weight:400;">/{conf.get('total',10)}</span></div>
+        </div>
+    </div>
+    <div style="font-size:0.82rem;color:#506070;line-height:1.65;border-top:1px solid #1A2A40;padding-top:10px;">{rec}</div>
+</div>
+""", unsafe_allow_html=True)
 
 
 # -------------------------------------------------------
@@ -826,14 +932,27 @@ def render_deep_dive():
                 with cols[j]:
                     pct = info["points"] / info["max"] if info["max"] > 0 else 0
                     if pct >= 0.6:
+                        bar_color = "#00E5C3"
                         dot_html = '<span class="dot dot-green"></span>'
                     elif pct >= 0.3:
+                        bar_color = "#FFB800"
                         dot_html = '<span class="dot dot-yellow"></span>'
                     else:
+                        bar_color = "#FF4757"
                         dot_html = '<span class="dot dot-red"></span>'
-                    st.markdown(f'{dot_html}<strong style="font-size:0.85rem;">{name}</strong>', unsafe_allow_html=True)
-                    st.progress(pct)
-                    st.caption(f"{info['points']}/{info['max']} pts")
+                    st.markdown(f"""
+<div style="background:#0F1923;border:1px solid #1A2A40;border-radius:8px;
+            padding:12px 14px;margin:4px 0;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+        <span style="font-size:0.78rem;font-weight:600;color:#C0CDD8;">{dot_html}{name}</span>
+        <span style="font-size:0.72rem;color:#4A5568;font-weight:500;">{info['points']}/{info['max']}</span>
+    </div>
+    <div style="background:#1A2A40;border-radius:3px;height:4px;overflow:hidden;">
+        <div style="background:{bar_color};width:{pct*100:.0f}%;height:100%;border-radius:3px;
+                    box-shadow:0 0 6px {bar_color}55;"></div>
+    </div>
+</div>
+""", unsafe_allow_html=True)
                     with st.expander("Detalhe"):
                         st.markdown(f"**Valor:** {info.get('value', 'N/A')}")
                         st.markdown(info['signal'])
