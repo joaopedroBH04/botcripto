@@ -83,3 +83,27 @@ CACHE_TTL = 600  # 10 minutos
 
 # --- Periodo de analise ---
 LOOKBACK_DAYS = 365
+
+
+# ============================================================
+# Helpers de classificacao de score (centralizados aqui para
+# evitar logica duplicada em app.py, database.py, etc.)
+# ============================================================
+
+def score_label(score: int) -> tuple[str, str]:
+    """
+    Retorna (texto, classe_css) para um score numerico.
+
+    Classes disponiveis:
+      'buy'     -> COMPRA FORTE  (score >= BUY_CONFIDENCE_STRONG)
+      'watch'   -> OBSERVACAO    (score >= BUY_CONFIDENCE_MODERATE)
+      'neutral' -> NEUTRO        (score >= SELL_CONFIDENCE)
+      'sell'    -> VENDA         (score <  SELL_CONFIDENCE)
+    """
+    if score >= BUY_CONFIDENCE_STRONG:
+        return "COMPRA FORTE", "buy"
+    elif score >= BUY_CONFIDENCE_MODERATE:
+        return "OBSERVACAO", "watch"
+    elif score >= SELL_CONFIDENCE:
+        return "NEUTRO", "neutral"
+    return "VENDA", "sell"

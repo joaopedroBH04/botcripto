@@ -16,6 +16,7 @@ from config import (
     BUY_CONFIDENCE_STRONG, BUY_CONFIDENCE_MODERATE, SELL_CONFIDENCE,
     FIBONACCI_LEVELS, FIBONACCI_LABELS,
     DEFAULT_PORTFOLIO_VALUE, DEFAULT_RISK_PER_TRADE,
+    score_label,
 )
 from data_fetcher import (
     fetch_crypto_current, fetch_crypto_history,
@@ -676,35 +677,22 @@ def get_history_and_analysis(asset_id: str, asset_type: str):
 
 def score_emoji(score: int) -> str:
     """Retorna texto simples para uso em dataframes (sem HTML)."""
-    if score >= BUY_CONFIDENCE_STRONG:
-        return "COMPRA FORTE"
-    elif score >= BUY_CONFIDENCE_MODERATE:
-        return "OBSERVACAO"
-    elif score >= SELL_CONFIDENCE:
-        return "NEUTRO"
-    return "VENDA"
+    label, _ = score_label(score)
+    return label
 
 
 def score_badge(score: int) -> str:
     """Retorna badge HTML para uso em markdown/HTML."""
-    if score >= BUY_CONFIDENCE_STRONG:
-        return '<span class="badge badge-buy">Compra Forte</span>'
-    elif score >= BUY_CONFIDENCE_MODERATE:
-        return '<span class="badge badge-watch">Observacao</span>'
-    elif score >= SELL_CONFIDENCE:
-        return '<span class="badge badge-neutral">Neutro</span>'
-    return '<span class="badge badge-sell">Venda</span>'
+    _, css = score_label(score)
+    labels = {"buy": "Compra Forte", "watch": "Observacao", "neutral": "Neutro", "sell": "Venda"}
+    return f'<span class="badge badge-{css}">{labels[css]}</span>'
 
 
 def score_dot(score: int) -> str:
     """Retorna dot HTML colorido para indicadores."""
-    if score >= BUY_CONFIDENCE_STRONG:
-        return '<span class="dot dot-green"></span>'
-    elif score >= BUY_CONFIDENCE_MODERATE:
-        return '<span class="dot dot-yellow"></span>'
-    elif score >= SELL_CONFIDENCE:
-        return '<span class="dot dot-gray"></span>'
-    return '<span class="dot dot-red"></span>'
+    _, css = score_label(score)
+    dot_classes = {"buy": "dot-green", "watch": "dot-yellow", "neutral": "dot-gray", "sell": "dot-red"}
+    return f'<span class="dot {dot_classes[css]}"></span>'
 
 
 def format_number(n):
@@ -1800,6 +1788,25 @@ def render_alerts():
                 f"{alert['explanation']}"
             )
 
+    # Historico de alertas disparados (banco de dados)
+    st.markdown("---")
+    st.markdown('<span class="section-label">Historico de Alertas — Ultimos 30 dias</span>', unsafe_allow_html=True)
+    try:
+        from database import load_alert_history
+        hist_df = load_alert_history(days=30)
+        if not hist_df.empty:
+            type_labels = {
+                "strong_buy": "Compra Forte",
+                "bullish_divergence_rsi": "Divergencia RSI",
+                "bullish_divergence_macd": "Divergencia MACD",
+            }
+            hist_df["Tipo"] = hist_df["Tipo"].map(lambda t: type_labels.get(t, t))
+            st.dataframe(hist_df[["Ativo", "Tipo", "Data", "Hora"]], use_container_width=True, hide_index=True)
+        else:
+            st.info("Nenhum alerta registrado nos ultimos 30 dias. Os alertas aparecem aqui quando notificacoes sao disparadas.")
+    except Exception:
+        pass
+
 
 # -------------------------------------------------------
 # PAGINA: Noticias
@@ -1890,7 +1897,12 @@ def render_portfolio():
     st.info("Adicione seus ativos para acompanhar valor total, P&L e alocacao.")
 
     if "portfolio" not in st.session_state:
-        st.session_state.portfolio = {}
+        # Carrega portfolio salvo no banco ao abrir a pagina pela primeira vez
+        try:
+            from database import load_portfolio
+            st.session_state.portfolio = load_portfolio()
+        except Exception:
+            st.session_state.portfolio = {}
 
     col1, col2, col3, col4 = st.columns(4)
     with col1:
@@ -1909,6 +1921,11 @@ def render_portfolio():
     if st.button("Adicionar"):
         if p_qty > 0:
             st.session_state.portfolio[p_asset] = {"type": p_type, "quantity": p_qty, "buy_price": p_buy}
+            try:
+                from database import save_portfolio_entry
+                save_portfolio_entry(p_asset, p_type, p_qty, p_buy)
+            except Exception:
+                pass
             st.success(f"{p_asset} adicionado!")
             st.rerun()
 
@@ -1917,21 +1934,21 @@ def render_portfolio():
         return
 
     portfolio_data = []
-    total_invested = 0
-    total_current = 0
+    total_invested = 0.0
+    total_current = 0.0
 
     for asset_id, info in st.session_state.portfolio.items():
         if info["type"] == "crypto":
             cdf = fetch_crypto_current([asset_id])
-            price = cdf.iloc[0]["price"] if not cdf.empty else 0
+            price = float(cdf.iloc[0]["price"]) if not cdf.empty else 0.0
         else:
             sdf = fetch_stock_history(asset_id, period="5d")
-            price = sdf["Close"].iloc[-1] if not sdf.empty else 0
+            price = float(sdf["Close"].iloc[-1]) if (not sdf.empty and len(sdf) > 0) else 0.0
 
         current_value = price * info["quantity"]
         invested = info["buy_price"] * info["quantity"]
         pnl = current_value - invested
-        pnl_pct = ((price - info["buy_price"]) / info["buy_price"] * 100) if info["buy_price"] > 0 else 0
+        pnl_pct = ((price - info["buy_price"]) / info["buy_price"] * 100) if info["buy_price"] > 0 else 0.0
 
         total_invested += invested
         total_current += current_value
@@ -1939,10 +1956,11 @@ def render_portfolio():
             "Ativo": asset_id, "Qtd": info["quantity"],
             "Compra": f"${info['buy_price']:.2f}", "Atual": f"${price:.2f}",
             "Valor": f"${current_value:.2f}", "P&L": f"${pnl:.2f}", "P&L%": f"{pnl_pct:+.2f}%",
+            "_current_value": current_value,   # valor numerico para o grafico de pizza
         })
 
     total_pnl = total_current - total_invested
-    total_pnl_pct = ((total_current - total_invested) / total_invested * 100) if total_invested > 0 else 0
+    total_pnl_pct = ((total_current - total_invested) / total_invested * 100) if total_invested > 0 else 0.0
 
     c1, c2, c3, c4 = st.columns(4)
     c1.metric("Investido", f"${total_invested:.2f}")
@@ -1950,12 +1968,13 @@ def render_portfolio():
     c3.metric("P&L", f"${total_pnl:.2f}", f"{total_pnl_pct:+.2f}%")
     c4.metric("Ativos", len(st.session_state.portfolio))
 
-    st.dataframe(pd.DataFrame(portfolio_data), use_container_width=True, hide_index=True)
+    display_df = pd.DataFrame([{k: v for k, v in p.items() if not k.startswith("_")} for p in portfolio_data])
+    st.dataframe(display_df, use_container_width=True, hide_index=True)
 
     if portfolio_data:
         fig = go.Figure(data=[go.Pie(
             labels=[p["Ativo"] for p in portfolio_data],
-            values=[float(p["Valor"].replace("$", "")) for p in portfolio_data],
+            values=[p["_current_value"] for p in portfolio_data],   # numerico direto — sem parse de string
             hole=0.4,
             marker_colors=["#00d4aa", "#3498db", "#f39c12", "#e74c3c", "#9b59b6",
                           "#1abc9c", "#e67e22", "#2ecc71", "#f1c40f", "#34495e"],
@@ -1963,9 +1982,27 @@ def render_portfolio():
         fig.update_layout(title="Alocacao", template="plotly_dark", paper_bgcolor="#0e1117", height=350)
         st.plotly_chart(fig, use_container_width=True)
 
-    if st.button("Limpar Portfolio"):
-        st.session_state.portfolio = {}
-        st.rerun()
+    col_rem, col_clear = st.columns([3, 1])
+    with col_rem:
+        if st.session_state.portfolio:
+            rem_asset = st.selectbox("Remover ativo", list(st.session_state.portfolio.keys()), key="p_remove")
+            if st.button("Remover selecionado"):
+                del st.session_state.portfolio[rem_asset]
+                try:
+                    from database import delete_portfolio_entry
+                    delete_portfolio_entry(rem_asset)
+                except Exception:
+                    pass
+                st.rerun()
+    with col_clear:
+        if st.button("Limpar Portfolio"):
+            try:
+                from database import clear_portfolio
+                clear_portfolio()
+            except Exception:
+                pass
+            st.session_state.portfolio = {}
+            st.rerun()
 
 
 # -------------------------------------------------------
