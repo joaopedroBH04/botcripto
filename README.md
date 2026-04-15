@@ -102,8 +102,14 @@ BotCripto/
 ├── app.py              # Dashboard Streamlit (UI + roteamento)
 ├── analysis.py         # Motor de análise técnica e scoring
 ├── data_fetcher.py     # Coleta de dados com rate limiting inteligente
+├── database.py         # Persistência SQLAlchemy (SQLite/PostgreSQL)
+├── notifications.py    # Alertas via Telegram/Discord/Webhook
 ├── config.py           # Configurações, watchlists e parâmetros
 ├── requirements.txt    # Dependências Python
+├── Dockerfile          # Imagem multi-stage (Python 3.11-slim)
+├── docker-compose.yml  # Orquestração dev/local
+├── .env.example        # Template de variáveis de ambiente
+├── tests/              # Suíte de testes (pytest, 83%+ cobertura)
 └── .streamlit/
     └── config.toml     # Tema escuro
 ```
@@ -154,6 +160,80 @@ streamlit run app.py
 ```
 
 O painel abre automaticamente em `http://localhost:8501`.
+
+---
+
+## 🐳 Execução com Docker
+
+Para rodar sem precisar instalar Python e dependências localmente, basta ter **Docker** e **Docker Compose** instalados.
+
+### Uso rápido (docker-compose)
+
+```bash
+# 1. (Opcional) Copie o template de variáveis de ambiente
+cp .env.example .env
+# Edite .env para configurar alertas (Telegram/Discord/Webhook)
+
+# 2. Suba a aplicação
+docker compose up -d --build
+
+# 3. Acesse o painel
+# http://localhost:8501
+
+# 4. Ver logs
+docker compose logs -f botcripto
+
+# 5. Parar
+docker compose down
+```
+
+O banco SQLite é persistido em `./data/botcripto.db` via bind mount — seu histórico de scores e alertas fica preservado entre reinícios do contêiner.
+
+### Build manual (sem docker-compose)
+
+```bash
+# Build da imagem
+docker build -t botcripto:latest .
+
+# Rodar
+docker run -d \
+  --name botcripto \
+  -p 8501:8501 \
+  -v "$(pwd)/data:/app/data" \
+  --env-file .env \
+  botcripto:latest
+```
+
+### Variáveis de ambiente suportadas
+
+| Variável | Descrição | Default |
+|----------|-----------|---------|
+| `BOTCRIPTO_DB_URL` | URL SQLAlchemy do banco | `sqlite:///data/botcripto.db` |
+| `TELEGRAM_BOT_TOKEN` | Token do bot Telegram | — |
+| `TELEGRAM_CHAT_ID` | ID do chat/canal Telegram | — |
+| `DISCORD_WEBHOOK_URL` | Webhook do Discord | — |
+| `BOTCRIPTO_WEBHOOK_URL` | Webhook genérico (Slack, n8n, etc.) | — |
+
+**Prioridade de alertas:** Telegram → Discord → Webhook genérico. Se nenhuma variável for preenchida, alertas ficam desativados (o dashboard continua funcionando normalmente).
+
+### Migração para PostgreSQL (futuro)
+
+O `docker-compose.yml` já traz um service `db` comentado. Para migrar basta descomentá-lo e ajustar:
+
+```bash
+BOTCRIPTO_DB_URL=postgresql://botcripto:botcripto@db:5432/botcripto
+```
+
+### Deploy em AWS
+
+A imagem é autossuficiente e pronta para:
+- **ECS/Fargate** — deploy serverless via `docker compose` (use AWS Copilot ou CDK)
+- **App Runner** — aponte direto para o ECR e suba em minutos
+- **EC2** — clone, `docker compose up -d`, pronto
+
+Para produção, recomenda-se apontar `BOTCRIPTO_DB_URL` para uma instância RDS PostgreSQL e manter o contêiner stateless.
+
+---
 
 ### Nenhuma API key necessária
 
@@ -286,6 +366,7 @@ yfinance>=0.2.36      # Dados de ações (Yahoo Finance)
 ta>=0.11.0            # Indicadores de análise técnica
 requests>=2.31.0      # Requisições HTTP
 feedparser>=6.0.0     # Parser de RSS feeds
+SQLAlchemy>=2.0.0     # ORM para persistência (SQLite/PostgreSQL)
 ```
 
 ---

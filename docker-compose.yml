@@ -1,0 +1,56 @@
+# ============================================================
+# BotCripto - docker-compose (dev/local)
+# ============================================================
+#
+# Sobe a aplicacao em http://localhost:8501
+# Banco SQLite persistido em ./data (bind mount)
+# Alertas: preencha .env a partir de .env.example para ativar
+# ============================================================
+
+services:
+  botcripto:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: botcripto:latest
+    container_name: botcripto
+    restart: unless-stopped
+    ports:
+      - "8501:8501"
+    environment:
+      # Banco — default SQLite. Para Postgres, sobrescreva:
+      #   BOTCRIPTO_DB_URL=postgresql://user:pass@db:5432/botcripto
+      BOTCRIPTO_DB_URL: ${BOTCRIPTO_DB_URL:-sqlite:///data/botcripto.db}
+
+      # Alertas — opcionais (deixe em branco para desabilitar)
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:-}
+      TELEGRAM_CHAT_ID: ${TELEGRAM_CHAT_ID:-}
+      DISCORD_WEBHOOK_URL: ${DISCORD_WEBHOOK_URL:-}
+      BOTCRIPTO_WEBHOOK_URL: ${BOTCRIPTO_WEBHOOK_URL:-}
+    volumes:
+      - ./data:/app/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8501/_stcore/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+# ============================================================
+# Para migrar para PostgreSQL no futuro, descomente abaixo
+# e ajuste BOTCRIPTO_DB_URL do servico principal.
+# ============================================================
+#  db:
+#    image: postgres:16-alpine
+#    restart: unless-stopped
+#    environment:
+#      POSTGRES_USER: botcripto
+#      POSTGRES_PASSWORD: botcripto
+#      POSTGRES_DB: botcripto
+#    volumes:
+#      - pgdata:/var/lib/postgresql/data
+#    ports:
+#      - "5432:5432"
+#
+# volumes:
+#   pgdata:
