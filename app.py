@@ -479,8 +479,15 @@ def get_all_assets() -> pd.DataFrame:
     return pd.concat(frames, ignore_index=True)
 
 
+@st.cache_data(ttl=600, show_spinner=False)
 def get_history_and_analysis(asset_id: str, asset_type: str):
-    """Busca historico e computa analise completa de um ativo."""
+    """
+    Busca historico + indicadores + score de UM ativo.
+
+    Resultado cacheado por 10 min: enquanto o usuario interagir com
+    widgets da mesma pagina (filtros, dropdowns), essa funcao nao
+    recalcula todos os indicadores nem refaz a chamada a API.
+    """
     if asset_type == "crypto":
         df = fetch_crypto_history(asset_id)
     else:
@@ -724,23 +731,27 @@ def create_gauge(score: int) -> go.Figure:
 # Funcao para analisar todos os ativos de uma vez
 # -------------------------------------------------------
 
-def analyze_all_assets():
-    """Busca e analisa todos os ativos. Retorna lista de dicts com scores."""
-    all_assets = get_all_assets()
+@st.cache_data(ttl=600, show_spinner=False)
+def _compute_all_scores(all_assets: pd.DataFrame, fg_val: int) -> list[dict]:
+    """
+    Nucleo puro e cacheavel de analise em lote.
+
+    Recebe a lista de ativos + valor atual do Fear&Greed e devolve uma
+    lista de dicts com scores + DataFrames anexados. Como esta funcao nao
+    depende de widgets Streamlit, pode ser cacheada por 10 min — o ganho
+    e substancial porque render_overview() e render_alerts() a chamam.
+    """
     if all_assets.empty:
-        return [], all_assets
+        return []
 
     crypto_assets = all_assets[all_assets["type"] == "crypto"]
     stock_assets = all_assets[all_assets["type"] == "stock"]
 
-    with st.spinner("Analisando criptomoedas... (respeitando limites da API)"):
-        crypto_ids = crypto_assets["id"].tolist() if not crypto_assets.empty else []
-        crypto_histories = fetch_all_crypto_histories(crypto_ids) if crypto_ids else {}
+    crypto_ids = crypto_assets["id"].tolist() if not crypto_assets.empty else []
+    crypto_histories = fetch_all_crypto_histories(crypto_ids) if crypto_ids else {}
 
-    fg_val, _ = get_fear_greed_current()
     scores = []
 
-    # Criptos
     for _, row in crypto_assets.iterrows():
         df = crypto_histories.get(row["id"], pd.DataFrame())
         if df.empty:
@@ -766,32 +777,64 @@ def analyze_all_assets():
                 "_df": df,
             })
 
-    # Acoes
-    with st.spinner("Analisando acoes e ETFs..."):
-        for _, row in stock_assets.iterrows():
-            df = fetch_stock_history(row["id"])
-            if df.empty:
-                continue
-            df = compute_indicators(df)
-            score_result = score_asset(df, fg_val)
-            dip_info = classify_dip(df)
-            if score_result:
-                confluence = score_result.get("confluence", {})
-                scores.append({
-                    "Ativo": f"{row['name']} ({row['symbol']})",
-                    "Tipo": "Acao",
-                    "Preco": f"${row['price']:.2f}" if row["price"] < 1000 else format_number(row["price"]),
-                    "24h": f"{row['change_24h']:+.2f}%",
-                    "Score": score_result["score"],
-                    "Sinal": score_result['label'],
-                    "Confluencia": f"{confluence.get('agree_buy', 0)}/{confluence.get('total', 10)}",
-                    "Tendencia": score_result["trend"].replace("_", " ").title(),
-                    "id": row["id"],
-                    "type": "stock",
-                    "_score_result": score_result,
-                    "_dip_info": dip_info,
-                    "_df": df,
-                })
+    for _, row in stock_assets.iterrows():
+        df = fetch_stock_history(row["id"])
+        if df.empty:
+            continue
+        df = compute_indicators(df)
+        score_result = score_asset(df, fg_val)
+        dip_info = classify_dip(df)
+        if score_result:
+            confluence = score_result.get("confluence", {})
+            scores.append({
+                "Ativo": f"{row['name']} ({row['symbol']})",
+                "Tipo": "Acao",
+                "Preco": f"${row['price']:.2f}" if row["price"] < 1000 else format_number(row["price"]),
+                "24h": f"{row['change_24h']:+.2f}%",
+                "Score": score_result["score"],
+                "Sinal": score_result['label'],
+                "Confluencia": f"{confluence.get('agree_buy', 0)}/{confluence.get('total', 10)}",
+                "Tendencia": score_result["trend"].replace("_", " ").title(),
+                "id": row["id"],
+                "type": "stock",
+                "_score_result": score_result,
+                "_dip_info": dip_info,
+                "_df": df,
+            })
+
+    return scores
+
+
+def analyze_all_assets():
+    """
+    Wrapper com UI (spinner) ao redor do nucleo cacheavel _compute_all_scores.
+
+    A separacao permite que o trabalho pesado (fetch + indicadores + scoring)
+    seja cacheado via @st.cache_data, enquanto mantem o feedback visual
+    para o usuario na primeira execucao.
+    """
+    all_assets = get_all_assets()
+    if all_assets.empty:
+        return [], all_assets
+
+    fg_val, _ = get_fear_greed_current()
+
+    with st.spinner("Analisando ativos... (respeitando limites da API)"):
+        scores = _compute_all_scores(all_assets, fg_val)
+
+    # Persistencia opcional: salva snapshot dos scores do dia
+    try:
+        from database import save_scores_snapshot
+        save_scores_snapshot(scores)
+    except Exception:
+        pass  # Persistencia e opcional, nao pode quebrar a UI
+
+    # Dispara notificacoes de sinais fortes (sem bloquear a UI)
+    try:
+        from notifications import dispatch_strong_signals
+        dispatch_strong_signals(scores)
+    except Exception:
+        pass
 
     return scores, all_assets
 
