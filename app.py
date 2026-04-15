@@ -385,6 +385,176 @@ hr { border-color: #1A2A40 !important; margin: 20px 0 !important; }
 
 /* ─── Alerts nativos Streamlit ─── */
 [data-testid="stAlert"] { border-radius: 10px !important; border-width: 1px !important; }
+
+/* ══════════════════════════════════════════
+   VISUAIS INOVADORES
+   ══════════════════════════════════════════ */
+
+/* ─── Ticker horizontal animado ─── */
+@keyframes ticker-scroll {
+    0%   { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+}
+.ticker-wrap {
+    background: #060B14;
+    border-top: 1px solid #0F1E2E;
+    border-bottom: 1px solid #0F1E2E;
+    overflow: hidden;
+    padding: 9px 0;
+    margin: 16px 0 20px 0;
+    position: relative;
+}
+.ticker-wrap::before, .ticker-wrap::after {
+    content: '';
+    position: absolute;
+    top: 0; bottom: 0;
+    width: 60px;
+    z-index: 2;
+}
+.ticker-wrap::before { left:0; background: linear-gradient(90deg,#060B14,transparent); }
+.ticker-wrap::after  { right:0; background: linear-gradient(90deg,transparent,#060B14); }
+.ticker-inner {
+    display: flex;
+    width: max-content;
+    animation: ticker-scroll 55s linear infinite;
+}
+.ticker-inner:hover { animation-play-state: paused; }
+
+/* ─── Anel SVG de score ─── */
+@keyframes ring-draw {
+    from { stroke-dashoffset: 340; }
+    to   { stroke-dashoffset: var(--ring-offset, 0); }
+}
+@keyframes ring-fade {
+    from { opacity: 0; transform: scale(0.9); }
+    to   { opacity: 1; transform: scale(1); }
+}
+.score-ring-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 14px 0 8px 0;
+    animation: ring-fade 0.5s ease forwards;
+}
+
+/* ─── Heatmap grid de ativos ─── */
+.heat-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(172px, 1fr));
+    gap: 10px;
+    margin: 14px 0 24px 0;
+}
+.heat-tile {
+    background: #0C1522;
+    border: 1px solid #1A2A40;
+    border-radius: 10px;
+    padding: 14px 15px;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+    position: relative;
+    overflow: hidden;
+}
+.heat-tile::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--tile-accent, #1A2A40);
+    border-radius: 10px 10px 0 0;
+}
+.heat-tile:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 32px rgba(0,0,0,0.55);
+    border-color: var(--tile-border, #2A3A50);
+}
+.heat-tile.t-buy  { --tile-accent: #00E5C3; --tile-border: rgba(0,229,195,0.3); }
+.heat-tile.t-watch{ --tile-accent: #FFB800; --tile-border: rgba(255,184,0,0.25); }
+.heat-tile.t-sell { --tile-accent: #FF4757; --tile-border: rgba(255,71,87,0.25); }
+.heat-tile.t-neut { --tile-accent: #2A3A50; --tile-border: #2A3A50; }
+
+/* ─── Glass metric cards ─── */
+.g-metric {
+    background: #0C1522;
+    border: 1px solid #1A2A40;
+    border-radius: 14px;
+    padding: 20px 22px 18px 22px;
+    position: relative;
+    overflow: hidden;
+    transition: box-shadow 0.2s;
+}
+.g-metric::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at 20% 0%, var(--gm-glow, rgba(0,229,195,0.06)) 0%, transparent 70%);
+    pointer-events: none;
+}
+.g-metric .gm-label {
+    font-size: 0.64rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: #2E4055;
+    margin-bottom: 10px;
+    display: block;
+}
+.g-metric .gm-value {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--gm-color, #E8EDF5);
+    line-height: 1;
+    margin-bottom: 6px;
+    text-shadow: 0 0 28px var(--gm-glow, transparent);
+}
+.g-metric .gm-sub {
+    font-size: 0.75rem;
+    color: #3A5060;
+}
+.g-metric .gm-accent-bar {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--gm-color, #1A2A40), transparent 60%);
+}
+
+/* ─── Numero de destaque com glow ─── */
+.glow-number {
+    font-size: 3rem;
+    font-weight: 800;
+    letter-spacing: -2px;
+    line-height: 1;
+}
+
+/* ─── Confluencia visual ─── */
+.conf-arc-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 10px;
+    padding: 16px;
+    background: #0C1522;
+    border: 1px solid #1A2A40;
+    border-radius: 12px;
+}
+
+/* ─── Barra de score inline ─── */
+.inline-score-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 4px 0;
+}
+.inline-score-bar .bar-track {
+    flex: 1;
+    background: #0A1520;
+    border-radius: 4px;
+    height: 5px;
+    overflow: hidden;
+}
+.inline-score-bar .bar-fill {
+    height: 100%;
+    border-radius: 4px;
+}
 </style>
 """, unsafe_allow_html=True)
 
@@ -840,6 +1010,139 @@ def analyze_all_assets():
 
 
 # -------------------------------------------------------
+# COMPONENTES VISUAIS INOVADORES
+# -------------------------------------------------------
+
+def _score_colors(score: int):
+    if score >= 72:
+        return "#00E5C3", "rgba(0,229,195,0.45)", "rgba(0,229,195,0.07)", "t-buy"
+    elif score >= 55:
+        return "#4A9EFF", "rgba(74,158,255,0.45)", "rgba(74,158,255,0.07)", "t-watch"
+    elif score >= 30:
+        return "#FFB800", "rgba(255,184,0,0.4)",  "rgba(255,184,0,0.06)",  "t-neut"
+    return "#FF4757", "rgba(255,71,87,0.45)", "rgba(255,71,87,0.07)", "t-sell"
+
+
+def render_score_ring_html(score: int) -> str:
+    """Anel SVG animado que substitui o gauge plotly."""
+    radius = 52
+    circ   = 326.7   # 2π × 52
+    offset = circ * (1 - score / 100)
+    color, glow, _, _ = _score_colors(score)
+    label = score_emoji(score)
+
+    return f"""
+<div class="score-ring-wrap">
+    <div style="position:relative;width:148px;height:148px;">
+        <svg width="148" height="148" viewBox="0 0 148 148"
+             style="transform:rotate(-90deg);overflow:visible;">
+            <circle cx="74" cy="74" r="{radius}" fill="none"
+                    stroke="#0A1520" stroke-width="13"/>
+            <circle cx="74" cy="74" r="{radius}" fill="none"
+                    stroke="{color}" stroke-width="13"
+                    stroke-linecap="round"
+                    stroke-dasharray="{circ:.1f}"
+                    style="--ring-offset:{offset:.1f};
+                           stroke-dashoffset:{offset:.1f};
+                           filter:drop-shadow(0 0 10px {glow});
+                           animation:ring-draw 1.4s cubic-bezier(0.22,1,0.36,1) forwards;"/>
+        </svg>
+        <div style="position:absolute;inset:0;display:flex;flex-direction:column;
+                    align-items:center;justify-content:center;gap:2px;">
+            <div style="font-size:2.5rem;font-weight:800;color:{color};line-height:1;
+                        text-shadow:0 0 30px {glow};letter-spacing:-2px;">{score}</div>
+            <div style="font-size:0.56rem;color:#2E4055;text-transform:uppercase;
+                        letter-spacing:2px;">/ 100</div>
+        </div>
+    </div>
+    <div style="margin-top:8px;font-size:0.68rem;font-weight:600;color:{color};
+                text-transform:uppercase;letter-spacing:1.8px;
+                background:{'rgba(0,229,195,0.08)' if score>=72 else 'rgba(74,158,255,0.08)' if score>=55 else 'rgba(255,184,0,0.08)' if score>=30 else 'rgba(255,71,87,0.08)'};
+                padding:4px 12px;border-radius:20px;">Score de Compra</div>
+</div>
+"""
+
+
+def render_ticker_html(scores: list) -> str:
+    """Banner de ticker horizontal com variacao 24h de todos os ativos."""
+    if not scores:
+        return ""
+    items = ""
+    for s in scores:
+        change = s.get("24h", "0%")
+        is_pos = change.startswith("+")
+        color  = "#00E5C3" if is_pos else "#FF4757"
+        name   = s["Ativo"].split("(")[0].strip()[:14]
+        symbol = "▲" if is_pos else "▼"
+        items += f"""<span style="display:inline-flex;align-items:center;gap:8px;
+                                   margin:0 22px;white-space:nowrap;">
+            <span style="font-size:0.72rem;color:#2E4055;font-family:'Courier New',monospace;
+                         letter-spacing:0.5px;">{name}</span>
+            <span style="font-size:0.75rem;font-weight:700;color:{color};
+                         font-family:'Courier New',monospace;">{symbol} {change}</span>
+        </span>
+        <span style="color:#0F1E2E;font-size:0.6rem;">·</span>"""
+    doubled = items * 2  # duplicar para loop seamless
+    return f"""
+<div class="ticker-wrap">
+    <div class="ticker-inner">{doubled}</div>
+</div>"""
+
+
+def render_heatmap_html(scores_df) -> str:
+    """Grade de tiles coloridos por score — substitui o dataframe tabular."""
+    tiles = ""
+    for _, row in scores_df.iterrows():
+        sv     = row["Score"]
+        change = row["24h"]
+        is_pos = change.startswith("+")
+        color, glow, bg, tile_cls = _score_colors(sv)
+        ch_color = "#00E5C3" if is_pos else "#FF4757"
+        ch_bg    = "rgba(0,229,195,0.08)" if is_pos else "rgba(255,71,87,0.08)"
+        ch_sym   = "▲" if is_pos else "▼"
+        name     = row["Ativo"]
+        pct      = sv / 100
+        conf     = row["Confluencia"]
+
+        tiles += f"""
+<div class="heat-tile {tile_cls}">
+    <div style="margin-bottom:9px;">
+        <div style="font-size:0.78rem;font-weight:600;color:#C0CDD8;
+                    line-height:1.3;margin-bottom:3px;">{name}</div>
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+            <span style="font-size:0.68rem;color:#2E4055;">{row['Tipo']} &middot; {row['Preco']}</span>
+            <span style="font-size:0.7rem;font-weight:700;color:{ch_color};
+                         background:{ch_bg};padding:1px 6px;border-radius:5px;">
+                {ch_sym} {change}</span>
+        </div>
+    </div>
+    <div style="background:#0A1520;border-radius:3px;height:3px;margin-bottom:10px;overflow:hidden;">
+        <div style="background:{color};width:{pct*100:.0f}%;height:100%;border-radius:3px;
+                    box-shadow:0 0 8px {glow};"></div>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:baseline;">
+        <span style="font-size:1.4rem;font-weight:800;color:{color};
+                     text-shadow:0 0 16px {glow};letter-spacing:-1px;">{sv}</span>
+        <span style="font-size:0.64rem;color:#2E4055;">{conf} indic.</span>
+    </div>
+</div>"""
+    return f'<div class="heat-grid">{tiles}</div>'
+
+
+def render_glass_metric(label: str, value: str, sub: str,
+                         color: str = "#E8EDF5",
+                         glow: str  = "rgba(0,229,195,0.06)") -> str:
+    """Card de metrica com efeito glassmorphism e glow."""
+    return f"""
+<div class="g-metric" style="--gm-color:{color};--gm-glow:{glow};">
+    <span class="gm-label">{label}</span>
+    <div class="gm-value">{value}</div>
+    <div class="gm-sub">{sub}</div>
+    <div class="gm-accent-bar"></div>
+</div>"""
+
+
+# -------------------------------------------------------
 # PAGINA: Visao Geral
 # -------------------------------------------------------
 def render_overview():
@@ -850,22 +1153,51 @@ def render_overview():
     <p>Panorama em tempo real &mdash; criptomoedas, acoes e sentimento</p></div>
 </div>""", unsafe_allow_html=True)
 
-    # Pulse do mercado
-    col1, col2, col3 = st.columns(3)
+    # ── Pulse do mercado — glass metrics ──
     fg_val, fg_class = get_fear_greed_current()
     btc_dom = fetch_btc_dominance()
+    total_assets = len(CRYPTO_IDS) + len(STOCK_TICKERS)
 
-    with col1:
-        fg_color = "normal" if 40 <= fg_val <= 60 else ("off" if fg_val > 60 else "inverse")
-        st.metric("Fear & Greed Index", f"{fg_val} - {fg_class}",
-                   delta=f"{'Medo' if fg_val < 40 else ('Ganancia' if fg_val > 60 else 'Neutro')}",
-                   delta_color=fg_color)
-    with col2:
-        st.metric("Dominancia BTC", f"{btc_dom:.1f}%")
-    with col3:
-        st.metric("Ativos Monitorados", f"{len(CRYPTO_IDS) + len(STOCK_TICKERS)}")
+    if fg_val <= 25:
+        fg_color, fg_glow = "#FF4757", "rgba(255,71,87,0.3)"
+        fg_sub = "Medo Extremo"
+    elif fg_val <= 45:
+        fg_color, fg_glow = "#FFB800", "rgba(255,184,0,0.28)"
+        fg_sub = "Medo"
+    elif fg_val <= 55:
+        fg_color, fg_glow = "#8B9AB0", "rgba(139,154,176,0.2)"
+        fg_sub = "Neutro"
+    elif fg_val <= 75:
+        fg_color, fg_glow = "#00E5C3", "rgba(0,229,195,0.28)"
+        fg_sub = "Ganancia"
+    else:
+        fg_color, fg_glow = "#FFB800", "rgba(255,184,0,0.3)"
+        fg_sub = "Ganancia Extrema"
 
-    st.markdown("---")
+    btc_color = "#00E5C3" if btc_dom >= 50 else "#4A9EFF"
+    btc_glow  = "rgba(0,229,195,0.25)" if btc_dom >= 50 else "rgba(74,158,255,0.25)"
+
+    c1, c2, c3 = st.columns(3)
+    with c1:
+        st.markdown(render_glass_metric(
+            "Fear &amp; Greed Index",
+            f"{fg_val} <span style='font-size:1rem;font-weight:400;color:#2E4055;'>{fg_class}</span>",
+            fg_sub, fg_color, fg_glow
+        ), unsafe_allow_html=True)
+    with c2:
+        st.markdown(render_glass_metric(
+            "Dominancia BTC",
+            f"{btc_dom:.1f}<span style='font-size:1rem;font-weight:400;color:#2E4055;'>%</span>",
+            "Dominancia do Bitcoin no mercado cripto",
+            btc_color, btc_glow
+        ), unsafe_allow_html=True)
+    with c3:
+        st.markdown(render_glass_metric(
+            "Ativos Monitorados",
+            str(total_assets),
+            f"{len(CRYPTO_IDS)} criptos &middot; {len(STOCK_TICKERS)} acoes/ETFs",
+            "#4A9EFF", "rgba(74,158,255,0.22)"
+        ), unsafe_allow_html=True)
 
     scores, all_assets = analyze_all_assets()
 
@@ -875,14 +1207,15 @@ def render_overview():
         return
     scores_df = scores_df.sort_values("Score", ascending=False)
 
-    # Alertas de divergencia no topo
+    # ── Ticker animado ──
+    st.markdown(render_ticker_html(scores), unsafe_allow_html=True)
+
+    # ── Alertas de divergencia ──
     divergence_alerts = []
     for _, row in scores_df.iterrows():
         sr = row.get("_score_result", {})
         divs = sr.get("divergences", {})
-        rsi_div = divs.get("rsi", {}).get("type", "none")
-        macd_div = divs.get("macd", {}).get("type", "none")
-        if rsi_div == "bullish" or macd_div == "bullish":
+        if divs.get("rsi", {}).get("type") == "bullish" or divs.get("macd", {}).get("type") == "bullish":
             divergence_alerts.append(row["Ativo"])
 
     if divergence_alerts:
@@ -893,35 +1226,19 @@ def render_overview():
             unsafe_allow_html=True,
         )
 
-    # Alertas de score
-    strong_buys = scores_df[scores_df["Score"] >= BUY_CONFIDENCE_STRONG]
+    # ── Alertas de score ──
+    strong_buys  = scores_df[scores_df["Score"] >= BUY_CONFIDENCE_STRONG]
     strong_sells = scores_df[scores_df["Score"] <= SELL_CONFIDENCE]
-
     if not strong_buys.empty:
-        st.success(
-            "**OPORTUNIDADES:** "
-            + ", ".join([f"{r['Ativo']} (Score: {r['Score']}, {r['Confluencia']})" for _, r in strong_buys.iterrows()])
-        )
+        st.success("**OPORTUNIDADES:** " + ", ".join(
+            [f"{r['Ativo']} (Score: {r['Score']}, {r['Confluencia']})" for _, r in strong_buys.iterrows()]))
     if not strong_sells.empty:
-        st.error(
-            "**ZONA DE VENDA:** "
-            + ", ".join([f"{r['Ativo']} (Score: {r['Score']})" for _, r in strong_sells.iterrows()])
-        )
+        st.error("**ZONA DE VENDA:** " + ", ".join(
+            [f"{r['Ativo']} (Score: {r['Score']})" for _, r in strong_sells.iterrows()]))
 
-    # Tabela principal
+    # ── Heatmap grid (substitui dataframe tabular) ──
     st.markdown('<span class="section-label">Ranking de Oportunidades</span>', unsafe_allow_html=True)
-    display_cols = ["Ativo", "Tipo", "Preco", "24h", "Score", "Confluencia", "Sinal", "Tendencia"]
-    display_df = scores_df[[c for c in display_cols if c in scores_df.columns]].reset_index(drop=True)
-    display_df.index += 1
-
-    st.dataframe(
-        display_df,
-        use_container_width=True,
-        height=min(len(display_df) * 40 + 40, 600),
-        column_config={
-            "Score": st.column_config.ProgressColumn("Score", min_value=0, max_value=100, format="%d"),
-        },
-    )
+    st.markdown(render_heatmap_html(scores_df), unsafe_allow_html=True)
 
     # Top 3 recomendacoes
     st.markdown('<span class="section-label">Top Recomendacoes</span>', unsafe_allow_html=True)
@@ -996,40 +1313,75 @@ def render_deep_dive():
     prev_price = df["Close"].iloc[-2] if len(df) > 1 else current_price
     change = ((current_price - prev_price) / prev_price) * 100
 
+    price_color  = "#00E5C3" if change >= 0 else "#FF4757"
+    price_glow   = "rgba(0,229,195,0.28)" if change >= 0 else "rgba(255,71,87,0.28)"
+    from_high    = ((current_price - df['Close'].max()) / df['Close'].max()) * 100
+    from_h_color = "#FF4757" if from_high < -20 else ("#FFB800" if from_high < -5 else "#00E5C3")
+
     col1, col2, col3, col4 = st.columns(4)
     with col1:
-        st.metric("Preco Atual", f"${current_price:.2f}", f"{change:+.2f}%")
+        st.markdown(render_glass_metric(
+            "Preco Atual",
+            f"<span style='font-size:1.5rem;'>${current_price:.2f}</span>",
+            f"{'▲' if change>=0 else '▼'} {change:+.2f}% (24h)",
+            price_color, price_glow
+        ), unsafe_allow_html=True)
     with col2:
-        st.metric("Maxima (Periodo)", f"${df['Close'].max():.2f}")
+        st.markdown(render_glass_metric(
+            "Maxima (Periodo)",
+            f"<span style='font-size:1.5rem;'>${df['Close'].max():.2f}</span>",
+            "Maior preco nos ultimos 365 dias",
+            "#4A9EFF", "rgba(74,158,255,0.22)"
+        ), unsafe_allow_html=True)
     with col3:
-        st.metric("Minima (Periodo)", f"${df['Close'].min():.2f}")
+        st.markdown(render_glass_metric(
+            "Minima (Periodo)",
+            f"<span style='font-size:1.5rem;'>${df['Close'].min():.2f}</span>",
+            "Menor preco nos ultimos 365 dias",
+            "#8B9AB0", "rgba(139,154,176,0.15)"
+        ), unsafe_allow_html=True)
     with col4:
-        from_high = ((current_price - df['Close'].max()) / df['Close'].max()) * 100
-        st.metric("Dist. da Maxima", f"{from_high:.1f}%")
+        st.markdown(render_glass_metric(
+            "Dist. da Maxima",
+            f"<span style='font-size:1.5rem;'>{from_high:.1f}%</span>",
+            "Quanto esta abaixo do topo historico",
+            from_h_color, f"rgba(255,71,87,0.2)" if from_high < -20 else "rgba(0,229,195,0.15)"
+        ), unsafe_allow_html=True)
 
     # Score + Confluencia + Divergencias
     if score_result:
         col1, col2, col3 = st.columns([1, 1, 1])
         with col1:
-            st.plotly_chart(create_gauge(score_result["score"]), use_container_width=True)
+            st.markdown(render_score_ring_html(score_result["score"]), unsafe_allow_html=True)
 
         with col2:
-            # Confluencia
-            conf = score_result.get("confluence", {})
+            conf  = score_result.get("confluence", {})
             agree = conf.get("agree_buy", 0)
             total = conf.get("total", 10)
-            pct = conf.get("percentage", 0)
+            pct   = conf.get("percentage", 0)
+            conf_color = "#00E5C3" if pct >= 60 else ("#FFB800" if pct >= 40 else "#FF4757")
+            conf_glow  = "rgba(0,229,195,0.4)" if pct >= 60 else ("rgba(255,184,0,0.4)" if pct >= 40 else "rgba(255,71,87,0.4)")
+            trend_txt  = score_result['trend'].replace('_', ' ').title()
+            label_txt  = score_result['label']
             st.markdown(f"""
-            <div class="confluence-box">
-                <h3 style="margin:0">{agree}/{total}</h3>
-                <p style="margin:0">indicadores concordam ({pct}%)</p>
-                <p style="margin:5px 0 0 0; font-size:0.85em; color:#aaa">
-                    {"Alta confianca" if pct >= 60 else ("Moderada" if pct >= 40 else "Baixa confianca")}
-                </p>
-            </div>
-            """, unsafe_allow_html=True)
-            st.markdown(f"**Tendencia:** {score_result['trend'].replace('_', ' ').title()}")
-            st.markdown(f"**Classificacao:** {score_result['label']}")
+<div class="g-metric" style="--gm-color:{conf_color};--gm-glow:{conf_glow};margin-bottom:10px;">
+    <span class="gm-label">Confluencia</span>
+    <div class="gm-value" style="font-size:2.6rem;letter-spacing:-2px;">
+        {agree}<span style="font-size:1rem;font-weight:400;color:#2E4055;">/{total}</span>
+    </div>
+    <div class="gm-sub">indicadores concordam &middot; {pct}%</div>
+    <div class="gm-accent-bar"></div>
+</div>
+<div style="background:#0C1522;border:1px solid #1A2A40;border-radius:10px;
+            padding:12px 16px;font-size:0.82rem;color:#506070;line-height:1.8;">
+    <div><span style="color:#2E4055;font-size:0.68rem;text-transform:uppercase;
+                       letter-spacing:1px;">Tendencia</span><br>
+         <span style="color:#C0CDD8;font-weight:600;">{trend_txt}</span></div>
+    <div style="margin-top:6px;"><span style="color:#2E4055;font-size:0.68rem;text-transform:uppercase;
+                       letter-spacing:1px;">Classificacao</span><br>
+         <span style="color:#C0CDD8;font-weight:600;">{label_txt}</span></div>
+</div>
+""", unsafe_allow_html=True)
 
         with col3:
             # Divergencias
