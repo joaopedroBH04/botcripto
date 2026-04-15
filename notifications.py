@@ -33,6 +33,13 @@ log = logging.getLogger("botcripto.notifications")
 
 STRONG_BUY_THRESHOLD = 72   # alinhado com config.BUY_CONFIDENCE_STRONG
 
+# Importacao lazy do modulo de banco — evita dependencia circular e falha
+# silenciosa quando database nao esta disponivel (ex.: testes sem SQLAlchemy).
+try:
+    from database import record_alert as _record_alert
+except Exception:  # pragma: no cover
+    _record_alert = None  # type: ignore[assignment]
+
 
 # ============================================================
 # Abstracao de canais
@@ -214,10 +221,9 @@ def dispatch_strong_signals(scores: list[dict]) -> int:
     if not scores:
         return 0
 
-    try:
-        from database import record_alert
-    except Exception:
-        record_alert = None  # Persistencia opcional — segue sem dedup
+    # Usa a referencia ao modulo importada no nivel do modulo.
+    # Pode ser substituida em testes via patch("notifications._record_alert").
+    record_alert = _record_alert
 
     sent = 0
     for item in scores:

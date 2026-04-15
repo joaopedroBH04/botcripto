@@ -25,10 +25,10 @@ from typing import Optional
 import pandas as pd
 from sqlalchemy import (
     create_engine, Column, Integer, Float, String, DateTime, Date,
-    UniqueConstraint, Index, text,
+    UniqueConstraint, Index, text, func,
 )
 from sqlalchemy.orm import declarative_base, sessionmaker, Session
-from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 
 
 # ============================================================
@@ -128,6 +128,18 @@ class AlertLog(Base):
     )
 
 
+class PortfolioEntry(Base):
+    """Posicao do portfolio — persiste entre sessoes do Streamlit."""
+    __tablename__ = "portfolio"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    asset_id = Column(String(64), nullable=False, unique=True)
+    asset_type = Column(String(16), nullable=False)   # "crypto" | "stock"
+    quantity = Column(Float, nullable=False)
+    buy_price = Column(Float, nullable=False)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
 # ============================================================
 # Inicializacao (lazy — cria tabelas na 1a chamada)
 # ============================================================
@@ -218,6 +230,8 @@ def save_scores_snapshot(scores: list[dict], snapshot_date: Optional[date] = Non
                 r[0] for r in session.query(ScoreSnapshot.asset_id)
                 .filter(ScoreSnapshot.snapshot_date == snapshot_date).all()
             }
+
+            new_rows: list[ScoreSnapshot] = []
             for item in scores:
                 asset_id = item.get("id")
                 if not asset_id or asset_id in existing:
@@ -232,7 +246,7 @@ def save_scores_snapshot(scores: list[dict], snapshot_date: Optional[date] = Non
                 if isinstance(df_asset, pd.DataFrame):
                     save_price_history(asset_id, item.get("type", "crypto"), df_asset)
 
-                session.add(ScoreSnapshot(
+                new_rows.append(ScoreSnapshot(
                     asset_id=asset_id,
                     asset_type=item.get("type", "crypto"),
                     snapshot_date=snapshot_date,
@@ -246,8 +260,11 @@ def save_scores_snapshot(scores: list[dict], snapshot_date: Optional[date] = Non
                     macd_divergence=(divs.get("macd") or {}).get("type", "none"),
                     signals_json=json.dumps(sr.get("signals", {}), default=str),
                 ))
-                inserted += 1
+
+            # Insercao em bloco — mais eficiente que add() individual em loops grandes
+            session.add_all(new_rows)
             session.commit()
+            inserted = len(new_rows)
     except SQLAlchemyError:
         return 0
 
@@ -325,3 +342,146 @@ def load_score_history(asset_id: str) -> pd.DataFrame:
             } for r in rows])
     except SQLAlchemyError:
         return pd.DataFrame()
+
+
+def get_score_trend(asset_id: str) -> dict:
+    """
+    Compara os dois ultimos snapshots de score de um ativo.
+
+    Retorna um dict com:
+      latest_score   : score do ultimo registro
+      previous_score : score do penultimo registro (ou None)
+      delta          : diferenca (latest - previous), ou None
+      direction      : 'up' | 'down' | 'flat' | None
+    """
+    try:
+        with get_session() as session:
+            rows = (
+                session.query(ScoreSnapshot.score, ScoreSnapshot.snapshot_date)
+                .filter(ScoreSnapshot.asset_id == asset_id)
+                .order_by(ScoreSnapshot.snapshot_date.desc())
+                .limit(2)
+                .all()
+            )
+        if not rows:
+            return {"latest_score": None, "previous_score": None, "delta": None, "direction": None}
+        latest = rows[0].score
+        if len(rows) < 2:
+            return {"latest_score": latest, "previous_score": None, "delta": None, "direction": None}
+        previous = rows[1].score
+        delta = latest - previous
+        direction = "up" if delta > 0 else ("down" if delta < 0 else "flat")
+        return {"latest_score": latest, "previous_score": previous, "delta": delta, "direction": direction}
+    except SQLAlchemyError:
+        return {"latest_score": None, "previous_score": None, "delta": None, "direction": None}
+
+
+def load_alert_history(days: int = 30) -> pd.DataFrame:
+    """
+    Retorna os alertas disparados nos ultimos N dias como DataFrame.
+
+    Colunas: asset_id, alert_type, snapshot_date, created_at
+    """
+    try:
+        with get_session() as session:
+            cutoff = date.today() - pd.Timedelta(days=days)
+            rows = (
+                session.query(AlertLog)
+                .filter(AlertLog.snapshot_date >= cutoff)
+                .order_by(AlertLog.created_at.desc())
+                .all()
+            )
+            if not rows:
+                return pd.DataFrame()
+            return pd.DataFrame([{
+                "Ativo": r.asset_id,
+                "Tipo": r.alert_type,
+                "Data": r.snapshot_date,
+                "Hora": r.created_at,
+            } for r in rows])
+    except SQLAlchemyError:
+        return pd.DataFrame()
+
+
+# ============================================================
+# Portfolio — persistencia entre sessoes
+# ============================================================
+
+def save_portfolio_entry(
+    asset_id: str,
+    asset_type: str,
+    quantity: float,
+    buy_price: float,
+) -> bool:
+    """
+    Salva (upsert) uma posicao no portfolio.
+
+    Retorna True se bem-sucedido, False em caso de erro.
+    """
+    try:
+        with get_session() as session:
+            entry = session.query(PortfolioEntry).filter(
+                PortfolioEntry.asset_id == asset_id
+            ).first()
+            if entry:
+                entry.asset_type = asset_type
+                entry.quantity = quantity
+                entry.buy_price = buy_price
+                entry.updated_at = datetime.utcnow()
+            else:
+                session.add(PortfolioEntry(
+                    asset_id=asset_id,
+                    asset_type=asset_type,
+                    quantity=quantity,
+                    buy_price=buy_price,
+                ))
+            session.commit()
+            return True
+    except SQLAlchemyError:
+        return False
+
+
+def delete_portfolio_entry(asset_id: str) -> bool:
+    """Remove uma posicao do portfolio pelo asset_id."""
+    try:
+        with get_session() as session:
+            session.query(PortfolioEntry).filter(
+                PortfolioEntry.asset_id == asset_id
+            ).delete()
+            session.commit()
+            return True
+    except SQLAlchemyError:
+        return False
+
+
+def clear_portfolio() -> bool:
+    """Remove todas as posicoes do portfolio."""
+    try:
+        with get_session() as session:
+            session.query(PortfolioEntry).delete()
+            session.commit()
+            return True
+    except SQLAlchemyError:
+        return False
+
+
+def load_portfolio() -> dict[str, dict]:
+    """
+    Carrega o portfolio salvo no banco.
+
+    Retorna dict no mesmo formato que st.session_state.portfolio:
+      { asset_id: {"type": ..., "quantity": ..., "buy_price": ...} }
+    """
+    try:
+        with get_session() as session:
+            rows = session.query(PortfolioEntry).all()
+            return {
+                r.asset_id: {
+                    "type": r.asset_type,
+                    "quantity": r.quantity,
+                    "buy_price": r.buy_price,
+                }
+                for r in rows
+            }
+    except SQLAlchemyError:
+        return {}
