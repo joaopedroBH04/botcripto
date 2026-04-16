@@ -593,6 +593,7 @@ _nav_options = {
     "▸  04   Alertas":           "Alertas",
     "▸  05   Noticias":          "Noticias",
     "▸  06   Portfolio":         "Portfolio",
+    "▸  07   Backtesting":       "Backtesting",
 }
 _nav_descs = {
     "Visao Geral":       "Panorama de todos os ativos",
@@ -601,6 +602,7 @@ _nav_descs = {
     "Alertas":           "Sinais ativos agora",
     "Noticias":          "Sentimento do mercado",
     "Portfolio":         "Seus ativos e P&L",
+    "Backtesting":       "Simule estrategias historicas",
 }
 _selected_nav = st.sidebar.radio(
     "nav",
@@ -1198,7 +1200,22 @@ def render_overview():
     # ── Ticker animado ──
     st.markdown(render_ticker_html(scores), unsafe_allow_html=True)
 
-    # ── Alertas de divergencia ──
+    # ── Estatisticas de zona ──────────────────────────────────────────────
+    n_strong = int((scores_df["Score"] >= BUY_CONFIDENCE_STRONG).sum())
+    n_buy    = int(((scores_df["Score"] >= BUY_CONFIDENCE_MODERATE) & (scores_df["Score"] < BUY_CONFIDENCE_STRONG)).sum())
+    n_neutral= int(((scores_df["Score"] >= SELL_CONFIDENCE) & (scores_df["Score"] < BUY_CONFIDENCE_MODERATE)).sum())
+    n_sell   = int((scores_df["Score"] < SELL_CONFIDENCE).sum())
+    avg_score= round(float(scores_df["Score"].mean()), 1)
+
+    zc1, zc2, zc3, zc4, zc5 = st.columns(5)
+    zc1.metric("Compra Forte", n_strong, help="Score >= 72")
+    zc2.metric("Compra",       n_buy,    help="Score 55-71")
+    zc3.metric("Neutro",       n_neutral, help="Score 30-54")
+    zc4.metric("Venda",        n_sell,   help="Score < 30")
+    zc5.metric("Media Score",  avg_score)
+    st.markdown("---")
+
+    # ── Divergencias bullish ──────────────────────────────────────────────
     divergence_alerts = []
     for _, row in scores_df.iterrows():
         sr = row.get("_score_result", {})
@@ -1214,8 +1231,8 @@ def render_overview():
             unsafe_allow_html=True,
         )
 
-    # ── Alertas de score ──
-    strong_buys  = scores_df[scores_df["Score"] >= BUY_CONFIDENCE_STRONG]
+    # ── Alertas de score ──────────────────────────────────────────────────
+    strong_buys = scores_df[scores_df["Score"] >= BUY_CONFIDENCE_STRONG]
     strong_sells = scores_df[scores_df["Score"] <= SELL_CONFIDENCE]
     if not strong_buys.empty:
         st.success("**OPORTUNIDADES:** " + ", ".join(
@@ -1224,9 +1241,52 @@ def render_overview():
         st.error("**ZONA DE VENDA:** " + ", ".join(
             [f"{r['Ativo']} (Score: {r['Score']})" for _, r in strong_sells.iterrows()]))
 
-    # ── Heatmap grid (substitui dataframe tabular) ──
+    # ── Enriquece com delta de score do dia anterior (banco) ──────────────
+    try:
+        from database import get_score_trend
+        for item in scores:
+            t = get_score_trend(item.get("id", ""))
+            delta = t.get("delta")
+            if delta is None:
+                item["Δ Score"] = "—"
+            elif delta > 0:
+                item["Δ Score"] = f"+{delta}"
+            elif delta < 0:
+                item["Δ Score"] = str(delta)
+            else:
+                item["Δ Score"] = "="
+        scores_df = pd.DataFrame(scores).sort_values("Score", ascending=False)
+    except Exception:
+        pass
+
+    # ── Heatmap visual ────────────────────────────────────────────────────
     st.markdown('<span class="section-label">Ranking de Oportunidades</span>', unsafe_allow_html=True)
     st.markdown(render_heatmap_html(scores_df), unsafe_allow_html=True)
+
+    # ── Tabela detalhada + export CSV ─────────────────────────────────────
+    display_cols = ["Ativo", "Tipo", "Preco", "24h", "Score", "Δ Score", "Confluencia", "Sinal", "Tendencia"]
+    display_df = scores_df[[c for c in display_cols if c in scores_df.columns]].reset_index(drop=True)
+    display_df.index += 1
+
+    col_rank, col_export = st.columns([5, 1])
+    with col_rank:
+        st.dataframe(
+            display_df,
+            use_container_width=True,
+            height=min(len(display_df) * 40 + 40, 600),
+            column_config={
+                "Score": st.column_config.ProgressColumn("Score", min_value=0, max_value=100, format="%d"),
+                "Δ Score": st.column_config.TextColumn("Δ Score", help="Variacao do score vs ontem"),
+            },
+        )
+    with col_export:
+        st.download_button(
+            label="Exportar CSV",
+            data=display_df.drop(columns=["_score_result", "_dip_info", "_df"], errors="ignore").to_csv(index=False),
+            file_name="ranking_botcripto.csv",
+            mime="text/csv",
+            use_container_width=True,
+        )
 
     # Top 3 recomendacoes
     st.markdown('<span class="section-label">Top Recomendacoes</span>', unsafe_allow_html=True)
@@ -1460,6 +1520,44 @@ def render_deep_dive():
             for label, price in fib_levels.items()
         ])
         st.dataframe(fib_df, use_container_width=True, hide_index=True)
+
+    # Historico de Score (banco de dados)
+    try:
+        from database import load_score_history
+        score_hist = load_score_history(asset_id)
+        if not score_hist.empty and len(score_hist) >= 2:
+            st.markdown('<span class="section-label">Historico de Score</span>', unsafe_allow_html=True)
+            fig_sh = go.Figure()
+            fig_sh.add_trace(go.Scatter(
+                x=score_hist["date"], y=score_hist["score"],
+                mode="lines+markers",
+                name="Score",
+                line=dict(color="#00E5C3", width=2),
+                fill="tozeroy",
+                fillcolor="rgba(0,229,195,0.06)",
+                marker=dict(size=5),
+            ))
+            fig_sh.add_hline(y=BUY_CONFIDENCE_STRONG, line_dash="dash",
+                             line_color="#00E5C3", opacity=0.5,
+                             annotation_text="Compra Forte", annotation_position="right")
+            fig_sh.add_hline(y=BUY_CONFIDENCE_MODERATE, line_dash="dash",
+                             line_color="#4A9EFF", opacity=0.4,
+                             annotation_text="Compra", annotation_position="right")
+            fig_sh.add_hline(y=SELL_CONFIDENCE, line_dash="dash",
+                             line_color="#FF4757", opacity=0.4,
+                             annotation_text="Venda", annotation_position="right")
+            fig_sh.update_layout(
+                height=240, template="plotly_dark",
+                paper_bgcolor="#0e1117", plot_bgcolor="#0e1117",
+                yaxis=dict(range=[0, 100], title="Score"),
+                xaxis=dict(title=""),
+                margin=dict(l=50, r=80, t=20, b=20),
+                showlegend=False,
+            )
+            st.plotly_chart(fig_sh, use_container_width=True)
+            st.caption(f"{len(score_hist)} snapshots registrados desde {score_hist['date'].min()}")
+    except Exception:
+        pass
 
 
 # -------------------------------------------------------
@@ -2006,6 +2104,228 @@ def render_portfolio():
 
 
 # -------------------------------------------------------
+# PAGINA: Backtesting
+# -------------------------------------------------------
+def _simulate_strategy(
+    score_hist: pd.DataFrame,
+    price_hist: pd.DataFrame,
+    buy_thresh: int,
+    sell_thresh: int,
+    capital: float,
+) -> tuple[list[dict], float, pd.DataFrame]:
+    """
+    Simula uma estrategia simples baseada em score:
+      - Compra quando score cruza acima de buy_thresh
+      - Vende quando score cruza abaixo de sell_thresh
+
+    Retorna (trades, capital_final, equity_curve).
+    """
+    # Alinha score com preco pela data
+    price_hist = price_hist.copy()
+    price_hist.index = pd.to_datetime(price_hist.index)
+    score_hist = score_hist.copy()
+    score_hist["date"] = pd.to_datetime(score_hist["date"])
+    merged = score_hist.set_index("date").join(price_hist[["Close"]], how="inner").dropna()
+    merged = merged.sort_index()
+
+    if len(merged) < 2:
+        return [], capital, pd.DataFrame()
+
+    trades: list[dict] = []
+    equity = capital
+    position: dict | None = None
+    equity_curve = []
+
+    prev_score = merged["score"].iloc[0]
+
+    for dt, row in merged.iterrows():
+        cur_score = int(row["score"])
+        close = float(row["Close"])
+        cur_equity = equity if position is None else (position["shares"] * close)
+
+        # Sinal de compra: score cruza ACIMA do threshold
+        if position is None and prev_score < buy_thresh <= cur_score:
+            shares = equity / close
+            position = {"entry_date": dt, "entry_price": close, "shares": shares}
+
+        # Sinal de venda: score cruza ABAIXO do threshold
+        elif position is not None and cur_score <= sell_thresh < prev_score:
+            exit_value = position["shares"] * close
+            pnl = exit_value - equity
+            pnl_pct = (exit_value / equity - 1) * 100
+            trades.append({
+                "Entrada": position["entry_date"].strftime("%Y-%m-%d"),
+                "Saida": dt.strftime("%Y-%m-%d"),
+                "Preco Entrada": f"${position['entry_price']:.2f}",
+                "Preco Saida": f"${close:.2f}",
+                "P&L": f"${pnl:+.2f}",
+                "P&L %": f"{pnl_pct:+.2f}%",
+                "Resultado": "Lucro" if pnl >= 0 else "Prejuizo",
+                "_pnl_raw": pnl,
+            })
+            equity = exit_value
+            position = None
+
+        equity_curve.append({"date": dt, "equity": cur_equity})
+        prev_score = cur_score
+
+    # Fecha posicao aberta no ultimo preco
+    if position is not None:
+        last_close = float(merged["Close"].iloc[-1])
+        cur_equity = position["shares"] * last_close
+        equity_curve[-1]["equity"] = cur_equity
+        equity = cur_equity
+
+    eq_df = pd.DataFrame(equity_curve).set_index("date") if equity_curve else pd.DataFrame()
+    return trades, equity, eq_df
+
+
+def render_backtesting():
+    st.markdown("""
+<div class="page-header">
+    <div class="page-header-bar"></div>
+    <div><h2>Backtesting de Estrategia</h2>
+    <p>Simule sua estrategia de compra/venda com dados historicos coletados pelo BotCripto</p></div>
+</div>""", unsafe_allow_html=True)
+
+    st.info(
+        "O backtesting usa os dados de score e preco registrados automaticamente pelo BotCripto "
+        "a cada vez que a Visao Geral e carregada. Quanto mais dias de uso, mais rico o historico."
+    )
+
+    # ── Configuracao ─────────────────────────────────────────────────────
+    col1, col2 = st.columns(2)
+    with col1:
+        bt_type = st.selectbox("Tipo", ["Criptomoeda", "Acao/ETF"], key="bt_type")
+        if bt_type == "Criptomoeda":
+            bt_asset = st.selectbox("Ativo", CRYPTO_IDS, format_func=lambda x: x.title(), key="bt_asset")
+        else:
+            bt_asset = st.selectbox("Ativo", STOCK_TICKERS, key="bt_asset")
+    with col2:
+        bt_capital = st.number_input("Capital inicial (USD)", value=10000.0, min_value=100.0, step=500.0, key="bt_cap")
+        col_buy, col_sell = st.columns(2)
+        bt_buy  = col_buy.number_input("Score de COMPRA",  value=BUY_CONFIDENCE_STRONG, min_value=1, max_value=99, key="bt_buy")
+        bt_sell = col_sell.number_input("Score de VENDA",  value=SELL_CONFIDENCE,       min_value=1, max_value=99, key="bt_sell")
+
+    if bt_buy <= bt_sell:
+        st.error("O score de COMPRA deve ser maior que o score de VENDA.")
+        return
+
+    st.markdown("---")
+
+    # ── Carrega dados ─────────────────────────────────────────────────────
+    try:
+        from database import load_score_history, load_price_history
+        score_hist  = load_score_history(bt_asset)
+        price_hist  = load_price_history(bt_asset)
+    except Exception as e:
+        st.error(f"Erro ao acessar banco de dados: {e}")
+        return
+
+    if score_hist.empty or price_hist.empty:
+        st.warning(
+            f"Ainda nao ha dados historicos suficientes para **{bt_asset}**. "
+            "Abra a pagina **Visao Geral** regularmente para acumular snapshots de score e preco. "
+            "O historico cresce automaticamente a cada visita."
+        )
+        # Mostra score e preco atuais como preview
+        col_a, col_b = st.columns(2)
+        col_a.metric("Snapshots de score", len(score_hist))
+        col_b.metric("Dias de preco salvo", len(price_hist))
+        return
+
+    # ── Executa simulacao ────────────────────────────────────────────────
+    trades, final_equity, eq_df = _simulate_strategy(
+        score_hist, price_hist, bt_buy, bt_sell, bt_capital
+    )
+
+    # ── Metricas resumo ──────────────────────────────────────────────────
+    total_return = (final_equity / bt_capital - 1) * 100
+    n_trades = len(trades)
+    n_wins   = sum(1 for t in trades if t["_pnl_raw"] >= 0)
+    win_rate = (n_wins / n_trades * 100) if n_trades else 0.0
+
+    # Calcula max drawdown a partir da equity curve
+    max_dd = 0.0
+    if not eq_df.empty:
+        roll_max = eq_df["equity"].cummax()
+        drawdowns = (eq_df["equity"] - roll_max) / roll_max * 100
+        max_dd = float(drawdowns.min())
+
+    mc1, mc2, mc3, mc4, mc5 = st.columns(5)
+    mc1.metric("Capital Inicial", f"${bt_capital:,.0f}")
+    mc2.metric("Capital Final",   f"${final_equity:,.0f}")
+    mc3.metric("Retorno Total",   f"{total_return:+.1f}%")
+    mc4.metric("Trades",          n_trades, help=f"{n_wins} lucrativos")
+    mc5.metric("Win Rate",        f"{win_rate:.0f}%")
+    st.markdown(f"**Max Drawdown:** `{max_dd:.1f}%`")
+    st.markdown("---")
+
+    # ── Grafico de equity ───────────────────────────────────────────────
+    if not eq_df.empty:
+        st.markdown('<span class="section-label">Curva de Capital</span>', unsafe_allow_html=True)
+        fig_eq = go.Figure()
+        fig_eq.add_trace(go.Scatter(
+            x=eq_df.index, y=eq_df["equity"],
+            mode="lines", name="Capital",
+            line=dict(color="#00E5C3", width=2),
+            fill="tozeroy", fillcolor="rgba(0,229,195,0.06)",
+        ))
+        fig_eq.add_hline(y=bt_capital, line_dash="dash", line_color="gray",
+                         opacity=0.5, annotation_text="Capital inicial")
+        fig_eq.update_layout(
+            height=280, template="plotly_dark",
+            paper_bgcolor="#0e1117", plot_bgcolor="#0e1117",
+            yaxis=dict(title="USD"), xaxis=dict(title=""),
+            margin=dict(l=50, r=20, t=20, b=20), showlegend=False,
+        )
+        st.plotly_chart(fig_eq, use_container_width=True)
+
+    # ── Score ao longo do tempo ──────────────────────────────────────────
+    st.markdown('<span class="section-label">Score e Sinais</span>', unsafe_allow_html=True)
+    fig_sc = go.Figure()
+    fig_sc.add_trace(go.Scatter(
+        x=score_hist["date"], y=score_hist["score"],
+        mode="lines+markers", name="Score",
+        line=dict(color="#4A9EFF", width=1.5),
+        marker=dict(size=4),
+    ))
+    fig_sc.add_hline(y=bt_buy, line_dash="dash", line_color="#00E5C3",
+                     opacity=0.6, annotation_text=f"Compra >= {bt_buy}")
+    fig_sc.add_hline(y=bt_sell, line_dash="dash", line_color="#FF4757",
+                     opacity=0.6, annotation_text=f"Venda <= {bt_sell}")
+    # Marca entradas e saidas
+    for t in trades:
+        fig_sc.add_vline(x=t["Entrada"], line_dash="solid", line_color="#00E5C3", opacity=0.4, line_width=1)
+        fig_sc.add_vline(x=t["Saida"],   line_dash="solid", line_color="#FF4757",  opacity=0.4, line_width=1)
+    fig_sc.update_layout(
+        height=260, template="plotly_dark",
+        paper_bgcolor="#0e1117", plot_bgcolor="#0e1117",
+        yaxis=dict(range=[0, 100], title="Score"), xaxis=dict(title=""),
+        margin=dict(l=50, r=80, t=20, b=20), showlegend=False,
+    )
+    st.plotly_chart(fig_sc, use_container_width=True)
+
+    # ── Tabela de trades ─────────────────────────────────────────────────
+    if trades:
+        st.markdown('<span class="section-label">Historico de Trades</span>', unsafe_allow_html=True)
+        trades_df = pd.DataFrame([{k: v for k, v in t.items() if not k.startswith("_")} for t in trades])
+        st.dataframe(trades_df, use_container_width=True, hide_index=True)
+        csv_bt = trades_df.to_csv(index=False)
+        st.download_button("Exportar Trades CSV", csv_bt,
+                           f"backtesting_{bt_asset}.csv", "text/csv")
+    else:
+        st.info(
+            "Nenhum trade executado com os parametros atuais. "
+            "Tente ajustar os thresholds de compra/venda ou aguarde mais dias de historico."
+        )
+
+    # ── Dados brutos ─────────────────────────────────────────────────────
+    with st.expander("Ver dados brutos de score"):
+        st.dataframe(score_hist, use_container_width=True, hide_index=True)
+
+
+# -------------------------------------------------------
 # Roteamento
 # -------------------------------------------------------
 if page == "Visao Geral":
@@ -2020,3 +2340,5 @@ elif page == "Noticias":
     render_news()
 elif page == "Portfolio":
     render_portfolio()
+elif page == "Backtesting":
+    render_backtesting()
