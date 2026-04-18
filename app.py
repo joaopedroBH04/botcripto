@@ -10,6 +10,7 @@ import plotly.graph_objects as go
 import plotly.express as px
 from plotly.subplots import make_subplots
 import time
+from datetime import datetime
 
 from config import (
     CRYPTO_IDS, STOCK_TICKERS,
@@ -562,7 +563,16 @@ hr { border-color: #1A2A40 !important; margin: 20px 0 !important; }
 # -------------------------------------------------------
 # Sidebar
 # -------------------------------------------------------
-st.sidebar.markdown("""
+# Registra hora da ultima renderizacao (nao do cache)
+if "last_render_time" not in st.session_state:
+    st.session_state["last_render_time"] = datetime.now()
+
+_now = datetime.now()
+_last = st.session_state.get("last_render_time", _now)
+_mins_ago = int((_now - _last).total_seconds() / 60)
+_age_label = "agora" if _mins_ago == 0 else f"ha {_mins_ago} min"
+
+st.sidebar.markdown(f"""
 <div style="padding:20px 4px 18px 4px; border-bottom:1px solid #0F1E2E; margin-bottom:16px;">
     <div style="font-size:1.6rem; font-weight:700;
                 background:linear-gradient(135deg,#00E5C3 0%,#4A9EFF 100%);
@@ -570,13 +580,16 @@ st.sidebar.markdown("""
                 background-clip:text; letter-spacing:-0.8px; line-height:1;">BotCripto</div>
     <div style="font-size:0.6rem; color:#2E4055; text-transform:uppercase;
                 letter-spacing:2.2px; margin-top:5px; margin-bottom:10px;">Monitor Financeiro v2</div>
-    <div style="display:flex;align-items:center;gap:7px;">
+    <div style="display:flex;align-items:center;gap:7px;margin-bottom:4px;">
         <div style="width:6px;height:6px;background:#00E5C3;border-radius:50%;
                     flex-shrink:0;
                     animation:live-blink 1.8s ease-in-out infinite;
                     box-shadow:0 0 6px rgba(0,229,195,0.8);"></div>
         <span style="font-size:0.62rem;color:#2E4055;text-transform:uppercase;
-                     letter-spacing:1.5px;">Dados ao vivo</span>
+                     letter-spacing:1.5px;">Cache 10 min &bull; Cripto</span>
+    </div>
+    <div style="font-size:0.6rem;color:#1A2A40;padding-left:13px;">
+        Pagina carregada {_age_label} &nbsp;&bull;&nbsp; {_now.strftime('%H:%M')}
     </div>
 </div>
 """, unsafe_allow_html=True)
@@ -619,7 +632,8 @@ st.sidebar.markdown(
 )
 
 st.sidebar.markdown("---")
-if st.sidebar.button("Atualizar Dados"):
+if st.sidebar.button("Atualizar Dados", use_container_width=True):
+    st.session_state["last_render_time"] = datetime.now()
     st.cache_data.clear()
     st.rerun()
 
@@ -1193,7 +1207,14 @@ def render_overview():
 
     scores_df = pd.DataFrame(scores)
     if scores_df.empty:
-        st.warning("Nao foi possivel calcular scores. Tente novamente em 1 minuto.")
+        st.error(
+            "**Nao foi possivel calcular scores dos ativos.**\n\n"
+            "Possiveis causas:\n"
+            "- Limite de requisicoes da API CoinGecko (max 5/min) — aguarde 60 s\n"
+            "- Conexao com a internet instavel\n"
+            "- Nenhum ativo configurado em `config.py`\n\n"
+            "Clique em **Atualizar Dados** no menu lateral e aguarde 1-2 minutos."
+        )
         return
     scores_df = scores_df.sort_values("Score", ascending=False)
 
@@ -1263,30 +1284,61 @@ def render_overview():
     st.markdown('<span class="section-label">Ranking de Oportunidades</span>', unsafe_allow_html=True)
     st.markdown(render_heatmap_html(scores_df), unsafe_allow_html=True)
 
+    # Barra de filtros
+    fc1, fc2, fc3 = st.columns([2, 2, 3])
+    with fc1:
+        tipo_filter = st.multiselect(
+            "Tipo", ["Cripto", "Acao"], default=["Cripto", "Acao"],
+            key="rank_tipo", label_visibility="collapsed",
+            placeholder="Filtrar por tipo..."
+        )
+    with fc2:
+        min_score_filter = st.slider("Score minimo", 0, 100, 0, key="rank_score", label_visibility="collapsed")
+    with fc3:
+        search_text = st.text_input(
+            "Busca", "", key="rank_search",
+            placeholder="Buscar ativo (ex: Bitcoin, PETR4...)",
+            label_visibility="collapsed",
+        )
+
     # ── Tabela detalhada + export CSV ─────────────────────────────────────
     display_cols = ["Ativo", "Tipo", "Preco", "24h", "Score", "Δ Score", "Confluencia", "Sinal", "Tendencia"]
     display_df = scores_df[[c for c in display_cols if c in scores_df.columns]].reset_index(drop=True)
-    display_df.index += 1
 
-    col_rank, col_export = st.columns([5, 1])
-    with col_rank:
-        st.dataframe(
-            display_df,
-            use_container_width=True,
-            height=min(len(display_df) * 40 + 40, 600),
-            column_config={
-                "Score": st.column_config.ProgressColumn("Score", min_value=0, max_value=100, format="%d"),
-                "Δ Score": st.column_config.TextColumn("Δ Score", help="Variacao do score vs ontem"),
-            },
-        )
-    with col_export:
-        st.download_button(
-            label="Exportar CSV",
-            data=display_df.drop(columns=["_score_result", "_dip_info", "_df"], errors="ignore").to_csv(index=False),
-            file_name="ranking_botcripto.csv",
-            mime="text/csv",
-            use_container_width=True,
-        )
+    # Aplica filtros
+    if tipo_filter:
+        display_df = display_df[display_df["Tipo"].isin(tipo_filter)]
+    if min_score_filter > 0:
+        display_df = display_df[display_df["Score"] >= min_score_filter]
+    if search_text.strip():
+        display_df = display_df[display_df["Ativo"].str.contains(search_text.strip(), case=False, na=False)]
+
+    if display_df.empty:
+        st.info("Nenhum ativo corresponde aos filtros selecionados.")
+    else:
+        display_df = display_df.reset_index(drop=True)
+        display_df.index += 1
+
+        col_rank, col_export = st.columns([5, 1])
+        with col_rank:
+            st.dataframe(
+                display_df,
+                use_container_width=True,
+                height=min(len(display_df) * 40 + 48, 600),
+                column_config={
+                    "Score": st.column_config.ProgressColumn("Score", min_value=0, max_value=100, format="%d"),
+                    "Δ Score": st.column_config.TextColumn("Δ Score", help="Variacao do score vs ontem"),
+                },
+            )
+        with col_export:
+            st.download_button(
+                label="CSV",
+                data=display_df.to_csv(index=False),
+                file_name="ranking_botcripto.csv",
+                mime="text/csv",
+                use_container_width=True,
+                help="Baixar ranking filtrado como CSV",
+            )
 
     # Top 3 recomendacoes
     st.markdown('<span class="section-label">Top Recomendacoes</span>', unsafe_allow_html=True)
@@ -1338,22 +1390,33 @@ def render_deep_dive():
     <p>10 indicadores tecnicos + scoring + gestao de risco por ativo</p></div>
 </div>""", unsafe_allow_html=True)
 
-    col1, col2 = st.columns(2)
-    with col1:
-        asset_type = st.selectbox("Tipo", ["Criptomoeda", "Acao/ETF"])
-    with col2:
-        if asset_type == "Criptomoeda":
-            asset_id = st.selectbox("Ativo", CRYPTO_IDS, format_func=lambda x: x.title())
-            a_type = "crypto"
-        else:
-            asset_id = st.selectbox("Ativo", STOCK_TICKERS)
-            a_type = "stock"
+    asset_type = st.radio("Tipo de ativo", ["Criptomoeda", "Acao / ETF"], horizontal=True)
+    if asset_type == "Criptomoeda":
+        asset_id = st.selectbox("Ativo", CRYPTO_IDS, format_func=lambda x: x.title())
+        a_type = "crypto"
+    else:
+        asset_id = st.selectbox("Ativo", STOCK_TICKERS)
+        a_type = "stock"
 
-    with st.spinner("Carregando analise completa..."):
+    with st.spinner(f"Carregando analise de {asset_id.title()}..."):
         df, score_result, dip_info = get_history_and_analysis(asset_id, a_type)
 
     if df is None or df.empty:
-        st.error(f"Nao foi possivel carregar dados de {asset_id}")
+        st.error(
+            f"**Sem dados para {asset_id.upper()}**\n\n"
+            "Possiveis causas:\n"
+            "- Ativo nao disponivel na API neste momento\n"
+            "- Limite de requisicoes atingido (aguarde 1 min)\n\n"
+            "Tente selecionar outro ativo ou clique em **Atualizar Dados**."
+        )
+        return
+
+    if not score_result:
+        st.warning(
+            f"Dados carregados, mas nao foi possivel calcular o score de **{asset_id.upper()}** "
+            f"(apenas {len(df)} candles — minimo: 50). "
+            "Tente novamente apos alguns minutos."
+        )
         return
 
     # Header
@@ -1581,9 +1644,9 @@ def render_risk():
             "e calcular quanto investir sem arriscar demais do seu portfolio."
         )
 
+        asset_type_r = st.radio("Tipo de ativo", ["Criptomoeda", "Acao / ETF"], horizontal=True, key="risk_type")
         col1, col2 = st.columns(2)
         with col1:
-            asset_type_r = st.selectbox("Tipo", ["Criptomoeda", "Acao/ETF"], key="risk_type")
             if asset_type_r == "Criptomoeda":
                 asset_id_r = st.selectbox("Ativo", CRYPTO_IDS, format_func=lambda x: x.title(), key="risk_asset")
                 a_type_r = "crypto"
@@ -1592,10 +1655,10 @@ def render_risk():
                 a_type_r = "stock"
         with col2:
             portfolio_val = st.number_input("Valor do seu Portfolio (USD)", value=float(DEFAULT_PORTFOLIO_VALUE),
-                                           min_value=100.0, step=500.0)
-            risk_pct = st.slider("Risco por operacao (%)", min_value=0.5, max_value=10.0,
-                                value=DEFAULT_RISK_PER_TRADE, step=0.5,
-                                help="Percentual maximo do portfolio que voce aceita perder nesta operacao")
+                                           min_value=100.0, max_value=10_000_000.0, step=500.0)
+            risk_pct = st.slider("Risco por operacao (%)", min_value=0.5, max_value=5.0,
+                                value=min(float(DEFAULT_RISK_PER_TRADE), 5.0), step=0.5,
+                                help="Percentual maximo do portfolio a arriscar. Acima de 5% e considerado alto risco.")
 
         with st.spinner("Calculando..."):
             df_r, sr_r, _ = get_history_and_analysis(asset_id_r, a_type_r)
@@ -1783,7 +1846,11 @@ def render_alerts():
     scores, all_assets = analyze_all_assets()
 
     if not scores:
-        st.warning("Sem dados disponiveis. Tente novamente em 1 minuto.")
+        st.error(
+            "**Sem dados de score disponíveis.**\n\n"
+            "Acesse a pagina **Visao Geral** primeiro para carregar os scores, "
+            "depois volte para os Alertas."
+        )
         return
 
     buy_alerts = []
@@ -1856,7 +1923,11 @@ def render_alerts():
             </div>
             """, unsafe_allow_html=True)
     else:
-        st.info("Nenhum ativo em zona de compra forte no momento.")
+        st.info(
+            "Nenhum ativo em zona de compra forte agora (Score >= 72). "
+            "Scores acima de 72 sao raros — exigem multiplos indicadores simultaneamente alinhados. "
+            "Veja os ativos em **Observacao** abaixo para oportunidades proximas do limiar."
+        )
 
     # Venda
     st.markdown(f'<span class="section-label">Zona de Alerta / Venda &mdash; {len(sell_alerts)} ativo(s)</span>', unsafe_allow_html=True)
@@ -1873,18 +1944,26 @@ def render_alerts():
             </div>
             """, unsafe_allow_html=True)
     else:
-        st.info("Nenhum ativo em zona de venda no momento.")
+        st.info("Nenhum ativo em zona de venda (Score < 30) no momento — mercado sem sinais de saida.")
 
     # Observacao
     st.markdown(f'<span class="section-label">Em Observacao &mdash; {len(watch_alerts)} ativo(s)</span>', unsafe_allow_html=True)
     if watch_alerts:
         for alert in sorted(watch_alerts, key=lambda x: x["score"], reverse=True):
             conf = alert.get("confluence", {})
-            st.info(
-                f"**{alert['name']}** - Score: {alert['score']} | "
-                f"Confluencia: {conf.get('agree_buy', 0)}/{conf.get('total', 10)} | "
-                f"{alert['explanation']}"
-            )
+            pct = conf.get("percentage", 0)
+            st.markdown(f"""
+<div style="background:#0F1923;border:1px solid #1A2A40;border-left:3px solid #4A9EFF;
+            border-radius:10px;padding:14px 18px;margin:6px 0;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+        <strong style="font-size:0.92rem;color:#E8EDF5;">{alert['name']}</strong>
+        <span style="font-size:0.76rem;color:#4A5568;">Score {alert['score']}/100 &nbsp;|&nbsp; {conf.get('agree_buy',0)}/{conf.get('total',10)} indicadores ({pct}%)</span>
+    </div>
+    <div style="font-size:0.78rem;color:#4A5568;margin-bottom:4px;">{alert['price']} &nbsp;&mdash;&nbsp; {alert['change_24h']} (24h)</div>
+    <div style="font-size:0.8rem;color:#506070;">{alert['explanation']}</div>
+</div>""", unsafe_allow_html=True)
+    else:
+        st.info("Nenhum ativo em observacao (Score 55-71) no momento.")
 
     # Historico de alertas disparados (banco de dados)
     st.markdown("---")
@@ -1979,7 +2058,12 @@ def render_news():
 </div>
 """, unsafe_allow_html=True)
     else:
-        st.info("Nao foi possivel carregar noticias.")
+        st.warning(
+            "**Feeds RSS nao responderam.**\n\n"
+            "Os feeds de noticias (CoinDesk, CoinTelegraph, Yahoo Finance) podem estar "
+            "temporariamente indisponiveis. Tente novamente em 2-3 minutos clicando em "
+            "**Atualizar Dados** no menu lateral."
+        )
 
 
 # -------------------------------------------------------
@@ -1995,40 +2079,56 @@ def render_portfolio():
     st.info("Adicione seus ativos para acompanhar valor total, P&L e alocacao.")
 
     if "portfolio" not in st.session_state:
-        # Carrega portfolio salvo no banco ao abrir a pagina pela primeira vez
         try:
             from database import load_portfolio
             st.session_state.portfolio = load_portfolio()
+            if st.session_state.portfolio:
+                st.caption(f"Portfolio carregado do banco: {len(st.session_state.portfolio)} ativo(s).")
         except Exception:
             st.session_state.portfolio = {}
 
-    col1, col2, col3, col4 = st.columns(4)
-    with col1:
-        p_type = st.selectbox("Tipo", ["crypto", "stock"], key="p_type",
-                              format_func=lambda x: "Cripto" if x == "crypto" else "Acao")
-    with col2:
-        if p_type == "crypto":
-            p_asset = st.selectbox("Ativo", CRYPTO_IDS, key="p_asset")
-        else:
-            p_asset = st.selectbox("Ativo", STOCK_TICKERS, key="p_asset")
-    with col3:
-        p_qty = st.number_input("Quantidade", min_value=0.0, step=0.01, key="p_qty")
-    with col4:
-        p_buy = st.number_input("Preco de Compra ($)", min_value=0.0, step=0.01, key="p_buy")
+    # ── Formulario de adicao ──────────────────────────────────────────────
+    with st.expander("Adicionar ativo ao portfolio", expanded=not bool(st.session_state.portfolio)):
+        p_type = st.radio("Tipo", ["crypto", "stock"], key="p_type", horizontal=True,
+                          format_func=lambda x: "Cripto" if x == "crypto" else "Acao")
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            if p_type == "crypto":
+                p_asset = st.selectbox("Ativo", CRYPTO_IDS, key="p_asset",
+                                       format_func=lambda x: x.title())
+            else:
+                p_asset = st.selectbox("Ativo", STOCK_TICKERS, key="p_asset")
+        with col2:
+            p_qty = st.number_input("Quantidade", min_value=0.0, step=0.01, key="p_qty",
+                                    help="Numero de unidades/acoes adquiridas")
+        with col3:
+            p_buy = st.number_input("Preco de Compra (USD)", min_value=0.0, step=0.01, key="p_buy",
+                                    help="Preco medio de compra por unidade em dolares")
 
-    if st.button("Adicionar"):
-        if p_qty > 0:
-            st.session_state.portfolio[p_asset] = {"type": p_type, "quantity": p_qty, "buy_price": p_buy}
-            try:
-                from database import save_portfolio_entry
-                save_portfolio_entry(p_asset, p_type, p_qty, p_buy)
-            except Exception:
-                pass
-            st.success(f"{p_asset} adicionado!")
-            st.rerun()
+        if st.button("Adicionar ao Portfolio", use_container_width=True):
+            if p_qty <= 0:
+                st.error("Quantidade deve ser maior que zero.")
+            elif p_buy <= 0:
+                st.error("Preco de compra deve ser maior que zero.")
+            else:
+                st.session_state.portfolio[p_asset] = {
+                    "type": p_type, "quantity": p_qty, "buy_price": p_buy
+                }
+                db_ok = False
+                try:
+                    from database import save_portfolio_entry
+                    db_ok = save_portfolio_entry(p_asset, p_type, p_qty, p_buy)
+                except Exception:
+                    pass
+                db_note = " (salvo no banco)" if db_ok else " (apenas em memoria — banco offline)"
+                st.success(f"{p_asset.upper()}: {p_qty:.6g} un. @ ${p_buy:.2f}{db_note}")
+                st.rerun()
 
     if not st.session_state.portfolio:
-        st.info("Portfolio vazio.")
+        st.info(
+            "Seu portfolio esta vazio. "
+            "Clique em **Adicionar ativo ao portfolio** acima para comecar a acompanhar seus investimentos."
+        )
         return
 
     portfolio_data = []
@@ -2222,16 +2322,35 @@ def render_backtesting():
         st.error(f"Erro ao acessar banco de dados: {e}")
         return
 
-    if score_hist.empty or price_hist.empty:
-        st.warning(
-            f"Ainda nao ha dados historicos suficientes para **{bt_asset}**. "
-            "Abra a pagina **Visao Geral** regularmente para acumular snapshots de score e preco. "
-            "O historico cresce automaticamente a cada visita."
-        )
-        # Mostra score e preco atuais como preview
+    MIN_SCORE_SNAPS = 10
+    MIN_PRICE_DAYS  = 20
+
+    if len(score_hist) < MIN_SCORE_SNAPS or len(price_hist) < MIN_PRICE_DAYS:
+        n_snaps = len(score_hist)
+        n_price = len(price_hist)
+        falta_snaps = max(0, MIN_SCORE_SNAPS - n_snaps)
+        falta_price = max(0, MIN_PRICE_DAYS - n_price)
+
+        st.warning(f"**Historico insuficiente para {bt_asset.upper()}**")
         col_a, col_b = st.columns(2)
-        col_a.metric("Snapshots de score", len(score_hist))
-        col_b.metric("Dias de preco salvo", len(price_hist))
+        col_a.metric(
+            "Snapshots de score",
+            f"{n_snaps}/{MIN_SCORE_SNAPS}",
+            delta=f"Faltam {falta_snaps}" if falta_snaps else "OK",
+            delta_color="inverse" if falta_snaps else "normal",
+        )
+        col_b.metric(
+            "Dias de preco",
+            f"{n_price}/{MIN_PRICE_DAYS}",
+            delta=f"Faltam {falta_price}" if falta_price else "OK",
+            delta_color="inverse" if falta_price else "normal",
+        )
+        st.markdown(
+            "**Como acumular historico:**\n"
+            "1. Abra a pagina **Visao Geral** uma vez por dia — cada visita salva um snapshot\n"
+            "2. Os precos sao coletados automaticamente junto com os scores\n"
+            f"3. Em ~{max(falta_snaps, falta_price)} dias de uso o backtesting estara disponivel"
+        )
         return
 
     # ── Executa simulacao ────────────────────────────────────────────────
@@ -2316,8 +2435,11 @@ def render_backtesting():
                            f"backtesting_{bt_asset}.csv", "text/csv")
     else:
         st.info(
-            "Nenhum trade executado com os parametros atuais. "
-            "Tente ajustar os thresholds de compra/venda ou aguarde mais dias de historico."
+            f"Nenhum trade executado com Score Compra >= {bt_buy} / Score Venda <= {bt_sell}.\n\n"
+            f"**Sugestoes:**\n"
+            f"- Reduza o Score de Compra de {bt_buy} para {max(50, bt_buy - 5)}\n"
+            f"- Eleve o Score de Venda de {bt_sell} para {min(bt_sell + 5, bt_buy - 10)}\n"
+            f"- Aguarde mais dias de historico (atual: {len(score_hist)} snapshots)"
         )
 
     # ── Dados brutos ─────────────────────────────────────────────────────
