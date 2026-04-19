@@ -160,7 +160,7 @@ footer { visibility: hidden; }
     background-clip: text;
 }
 .confluence-box p {
-    color: #4A5568;
+    color: #6A8898;
     font-size: 0.78rem;
     margin: 4px 0 0 0;
     text-transform: uppercase;
@@ -209,7 +209,7 @@ footer { visibility: hidden; }
     font-size: 0.7rem !important;
     text-transform: uppercase;
     letter-spacing: 1px;
-    color: #4A5568 !important;
+    color: #7A9AB0 !important;
 }
 [data-testid="stMetricValue"] { color: #E8EDF5 !important; font-weight: 700 !important; }
 
@@ -347,7 +347,7 @@ hr { border-color: #1A2A40 !important; margin: 20px 0 !important; }
     font-size: 0.68rem;
     text-transform: uppercase;
     letter-spacing: 2px;
-    color: #2E4055;
+    color: #587888;
     margin: 28px 0 12px 0;
     display: block;
     padding-bottom: 8px;
@@ -380,7 +380,7 @@ hr { border-color: #1A2A40 !important; margin: 20px 0 !important; }
 }
 .page-header p {
     font-size: 0.8rem;
-    color: #2E4055;
+    color: #5A7888;
     margin: 0;
     letter-spacing: 0.3px;
 }
@@ -495,7 +495,7 @@ hr { border-color: #1A2A40 !important; margin: 20px 0 !important; }
     font-size: 0.64rem;
     text-transform: uppercase;
     letter-spacing: 2px;
-    color: #2E4055;
+    color: #6A90A8;
     margin-bottom: 10px;
     display: block;
 }
@@ -509,7 +509,7 @@ hr { border-color: #1A2A40 !important; margin: 20px 0 !important; }
 }
 .g-metric .gm-sub {
     font-size: 0.75rem;
-    color: #3A5060;
+    color: #607888;
 }
 .g-metric .gm-accent-bar {
     position: absolute;
@@ -578,24 +578,24 @@ st.sidebar.markdown(f"""
                 background:linear-gradient(135deg,#00E5C3 0%,#4A9EFF 100%);
                 -webkit-background-clip:text; -webkit-text-fill-color:transparent;
                 background-clip:text; letter-spacing:-0.8px; line-height:1;">BotCripto</div>
-    <div style="font-size:0.6rem; color:#2E4055; text-transform:uppercase;
+    <div style="font-size:0.6rem; color:#5A7888; text-transform:uppercase;
                 letter-spacing:2.2px; margin-top:5px; margin-bottom:10px;">Monitor Financeiro v2</div>
     <div style="display:flex;align-items:center;gap:7px;margin-bottom:4px;">
         <div style="width:6px;height:6px;background:#00E5C3;border-radius:50%;
                     flex-shrink:0;
                     animation:live-blink 1.8s ease-in-out infinite;
                     box-shadow:0 0 6px rgba(0,229,195,0.8);"></div>
-        <span style="font-size:0.62rem;color:#2E4055;text-transform:uppercase;
+        <span style="font-size:0.62rem;color:#5A7888;text-transform:uppercase;
                      letter-spacing:1.5px;">Cache 10 min &bull; Cripto</span>
     </div>
-    <div style="font-size:0.6rem;color:#1A2A40;padding-left:13px;">
+    <div style="font-size:0.6rem;color:#3A5568;padding-left:13px;">
         Pagina carregada {_age_label} &nbsp;&bull;&nbsp; {_now.strftime('%H:%M')}
     </div>
 </div>
 """, unsafe_allow_html=True)
 
 st.sidebar.markdown("""
-<div style="font-size:0.62rem;color:#2A3A50;text-transform:uppercase;
+<div style="font-size:0.62rem;color:#4A6275;text-transform:uppercase;
             letter-spacing:2px;margin-bottom:6px;padding:0 4px;">Menu</div>
 """, unsafe_allow_html=True)
 
@@ -626,7 +626,7 @@ page = _nav_options[_selected_nav]
 
 # Descricao da pagina ativa
 st.sidebar.markdown(
-    f'<div style="font-size:0.75rem;color:#2E4055;padding:4px 14px 12px 14px;'
+    f'<div style="font-size:0.75rem;color:#5A7888;padding:4px 14px 12px 14px;'
     f'border-bottom:1px solid #0F1E2E;">{_nav_descs[page]}</div>',
     unsafe_allow_html=True,
 )
@@ -640,14 +640,14 @@ if st.sidebar.button("Atualizar Dados", use_container_width=True):
 st.sidebar.markdown("""
 <div style="margin-top:24px;padding:14px;background:#090F1C;border-radius:8px;
             border:1px solid #0F1E2E;">
-    <div style="font-size:0.65rem;color:#2E4055;text-transform:uppercase;
+    <div style="font-size:0.65rem;color:#5A7888;text-transform:uppercase;
                 letter-spacing:1.2px;margin-bottom:6px;">Aviso Legal</div>
-    <div style="font-size:0.72rem;color:#2A3A50;line-height:1.6;">
+    <div style="font-size:0.72rem;color:#4A6275;line-height:1.6;">
         Este sistema e apenas informativo e nao constitui recomendacao de investimento.
         Sempre faca sua propria analise antes de operar.
     </div>
 </div>
-<div style="margin-top:14px;font-size:0.62rem;color:#1A2A40;text-align:center;
+<div style="margin-top:14px;font-size:0.62rem;color:#3A5060;text-align:center;
             letter-spacing:0.5px;">BotCripto v2 &nbsp;·&nbsp; open source</div>
 """, unsafe_allow_html=True)
 
@@ -715,14 +715,12 @@ def format_number(n):
     if n is None or (isinstance(n, float) and np.isnan(n)):
         return "N/A"
     if abs(n) >= 1e12:
-        return f"${n/1e12:.2f}T"
+        return f"${n/1e12:,.2f}T"
     if abs(n) >= 1e9:
-        return f"${n/1e9:.2f}B"
+        return f"${n/1e9:,.2f}B"
     if abs(n) >= 1e6:
-        return f"${n/1e6:.2f}M"
-    if abs(n) >= 1e3:
-        return f"${n/1e3:.2f}K"
-    return f"${n:.2f}"
+        return f"${n/1e6:,.2f}M"
+    return f"${n:,.2f}"
 
 
 # -------------------------------------------------------
@@ -938,7 +936,7 @@ def _compute_all_scores(all_assets: pd.DataFrame, fg_val: int) -> list[dict]:
             scores.append({
                 "Ativo": f"{row['name']} ({row['symbol']})",
                 "Tipo": "Cripto",
-                "Preco": f"${row['price']:.4f}" if row["price"] < 1 else (f"${row['price']:.2f}" if row["price"] < 1000 else format_number(row["price"])),
+                "Preco": f"${row['price']:.4f}" if row["price"] < 1 else format_number(row["price"]),
                 "24h": f"{row['change_24h']:+.2f}%",
                 "Score": score_result["score"],
                 "Sinal": score_result['label'],
@@ -963,7 +961,7 @@ def _compute_all_scores(all_assets: pd.DataFrame, fg_val: int) -> list[dict]:
             scores.append({
                 "Ativo": f"{row['name']} ({row['symbol']})",
                 "Tipo": "Acao",
-                "Preco": f"${row['price']:.2f}" if row["price"] < 1000 else format_number(row["price"]),
+                "Preco": format_number(row["price"]),
                 "24h": f"{row['change_24h']:+.2f}%",
                 "Score": score_result["score"],
                 "Sinal": score_result['label'],
@@ -1055,7 +1053,7 @@ def render_score_ring_html(score: int) -> str:
                     align-items:center;justify-content:center;gap:2px;">
             <div style="font-size:2.5rem;font-weight:800;color:{color};line-height:1;
                         text-shadow:0 0 30px {glow};letter-spacing:-2px;">{score}</div>
-            <div style="font-size:0.56rem;color:#2E4055;text-transform:uppercase;
+            <div style="font-size:0.56rem;color:#5A7888;text-transform:uppercase;
                         letter-spacing:2px;">/ 100</div>
         </div>
     </div>
@@ -1080,7 +1078,7 @@ def render_ticker_html(scores: list) -> str:
         symbol = "▲" if is_pos else "▼"
         items += f"""<span style="display:inline-flex;align-items:center;gap:8px;
                                    margin:0 22px;white-space:nowrap;">
-            <span style="font-size:0.72rem;color:#2E4055;font-family:'Courier New',monospace;
+            <span style="font-size:0.72rem;color:#5A7888;font-family:'Courier New',monospace;
                          letter-spacing:0.5px;">{name}</span>
             <span style="font-size:0.75rem;font-weight:700;color:{color};
                          font-family:'Courier New',monospace;">{symbol} {change}</span>
@@ -1114,7 +1112,7 @@ def render_heatmap_html(scores_df) -> str:
         <div style="font-size:0.78rem;font-weight:600;color:#C0CDD8;
                     line-height:1.3;margin-bottom:3px;">{name}</div>
         <div style="display:flex;justify-content:space-between;align-items:center;">
-            <span style="font-size:0.68rem;color:#2E4055;">{row['Tipo']} &middot; {row['Preco']}</span>
+            <span style="font-size:0.68rem;color:#5A7888;">{row['Tipo']} &middot; {row['Preco']}</span>
             <span style="font-size:0.7rem;font-weight:700;color:{ch_color};
                          background:{ch_bg};padding:1px 6px;border-radius:5px;">
                 {ch_sym} {change}</span>
@@ -1127,7 +1125,7 @@ def render_heatmap_html(scores_df) -> str:
     <div style="display:flex;justify-content:space-between;align-items:baseline;">
         <span style="font-size:1.4rem;font-weight:800;color:{color};
                      text-shadow:0 0 16px {glow};letter-spacing:-1px;">{sv}</span>
-        <span style="font-size:0.64rem;color:#2E4055;">{conf} indic.</span>
+        <span style="font-size:0.64rem;color:#5A7888;">{conf} indic.</span>
     </div>
 </div>"""
     return f'<div class="heat-grid">{tiles}</div>'
@@ -1185,13 +1183,13 @@ def render_overview():
     with c1:
         st.markdown(render_glass_metric(
             "Fear &amp; Greed Index",
-            f"{fg_val} <span style='font-size:1rem;font-weight:400;color:#2E4055;'>{fg_class}</span>",
+            f"{fg_val} <span style='font-size:1rem;font-weight:400;color:#5A7888;'>{fg_class}</span>",
             fg_sub, fg_color, fg_glow
         ), unsafe_allow_html=True)
     with c2:
         st.markdown(render_glass_metric(
             "Dominancia BTC",
-            f"{btc_dom:.1f}<span style='font-size:1rem;font-weight:400;color:#2E4055;'>%</span>",
+            f"{btc_dom:.1f}<span style='font-size:1rem;font-weight:400;color:#5A7888;'>%</span>",
             "Dominancia do Bitcoin no mercado cripto",
             btc_color, btc_glow
         ), unsafe_allow_html=True)
@@ -1360,21 +1358,21 @@ def render_overview():
     <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;">
         <div>
             <div style="font-weight:700;font-size:0.88rem;color:#E8EDF5;margin-bottom:2px;">{row['Ativo']}</div>
-            <div style="font-size:0.72rem;color:#2E4055;">{row['Preco']} &nbsp;·&nbsp; {row['24h']} (24h)</div>
+            <div style="font-size:0.72rem;color:#5A7888;">{row['Preco']} &nbsp;·&nbsp; {row['24h']} (24h)</div>
         </div>
         {score_badge(score_val)}
     </div>
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
         <div>
-            <div style="font-size:0.68rem;color:#2E4055;text-transform:uppercase;letter-spacing:1px;">Score</div>
-            <div style="font-size:1.6rem;font-weight:700;color:#00E5C3;line-height:1;">{score_val}<span style="font-size:0.8rem;color:#2E4055;font-weight:400;">/100</span></div>
+            <div style="font-size:0.68rem;color:#5A7888;text-transform:uppercase;letter-spacing:1px;">Score</div>
+            <div style="font-size:1.6rem;font-weight:700;color:#00E5C3;line-height:1;">{score_val}<span style="font-size:0.8rem;color:#5A7888;font-weight:400;">/100</span></div>
         </div>
         <div style="text-align:right;">
-            <div style="font-size:0.68rem;color:#2E4055;text-transform:uppercase;letter-spacing:1px;">Confluencia</div>
-            <div style="font-size:1.2rem;font-weight:700;color:#4A9EFF;">{conf.get('agree_buy',0)}<span style="font-size:0.8rem;color:#2E4055;font-weight:400;">/{conf.get('total',10)}</span></div>
+            <div style="font-size:0.68rem;color:#5A7888;text-transform:uppercase;letter-spacing:1px;">Confluencia</div>
+            <div style="font-size:1.2rem;font-weight:700;color:#4A9EFF;">{conf.get('agree_buy',0)}<span style="font-size:0.8rem;color:#5A7888;font-weight:400;">/{conf.get('total',10)}</span></div>
         </div>
     </div>
-    <div style="font-size:0.82rem;color:#506070;line-height:1.65;border-top:1px solid #1A2A40;padding-top:10px;">{rec}</div>
+    <div style="font-size:0.82rem;color:#7A9AB0;line-height:1.65;border-top:1px solid #1A2A40;padding-top:10px;">{rec}</div>
 </div>
 """, unsafe_allow_html=True)
 
@@ -1433,21 +1431,21 @@ def render_deep_dive():
     with col1:
         st.markdown(render_glass_metric(
             "Preco Atual",
-            f"<span style='font-size:1.5rem;'>${current_price:.2f}</span>",
+            f"<span style='font-size:1.5rem;'>${current_price:,.2f}</span>",
             f"{'▲' if change>=0 else '▼'} {change:+.2f}% (24h)",
             price_color, price_glow
         ), unsafe_allow_html=True)
     with col2:
         st.markdown(render_glass_metric(
             "Maxima (Periodo)",
-            f"<span style='font-size:1.5rem;'>${df['Close'].max():.2f}</span>",
+            f"<span style='font-size:1.5rem;'>${df['Close'].max():,.2f}</span>",
             "Maior preco nos ultimos 365 dias",
             "#4A9EFF", "rgba(74,158,255,0.22)"
         ), unsafe_allow_html=True)
     with col3:
         st.markdown(render_glass_metric(
             "Minima (Periodo)",
-            f"<span style='font-size:1.5rem;'>${df['Close'].min():.2f}</span>",
+            f"<span style='font-size:1.5rem;'>${df['Close'].min():,.2f}</span>",
             "Menor preco nos ultimos 365 dias",
             "#8B9AB0", "rgba(139,154,176,0.15)"
         ), unsafe_allow_html=True)
@@ -1478,17 +1476,17 @@ def render_deep_dive():
 <div class="g-metric" style="--gm-color:{conf_color};--gm-glow:{conf_glow};margin-bottom:10px;">
     <span class="gm-label">Confluencia</span>
     <div class="gm-value" style="font-size:2.6rem;letter-spacing:-2px;">
-        {agree}<span style="font-size:1rem;font-weight:400;color:#2E4055;">/{total}</span>
+        {agree}<span style="font-size:1rem;font-weight:400;color:#5A7888;">/{total}</span>
     </div>
     <div class="gm-sub">indicadores concordam &middot; {pct}%</div>
     <div class="gm-accent-bar"></div>
 </div>
 <div style="background:#0C1522;border:1px solid #1A2A40;border-radius:10px;
-            padding:12px 16px;font-size:0.82rem;color:#506070;line-height:1.8;">
-    <div><span style="color:#2E4055;font-size:0.68rem;text-transform:uppercase;
+            padding:12px 16px;font-size:0.82rem;color:#7A9AB0;line-height:1.8;">
+    <div><span style="color:#5A7888;font-size:0.68rem;text-transform:uppercase;
                        letter-spacing:1px;">Tendencia</span><br>
          <span style="color:#C0CDD8;font-weight:600;">{trend_txt}</span></div>
-    <div style="margin-top:6px;"><span style="color:#2E4055;font-size:0.68rem;text-transform:uppercase;
+    <div style="margin-top:6px;"><span style="color:#5A7888;font-size:0.68rem;text-transform:uppercase;
                        letter-spacing:1px;">Classificacao</span><br>
          <span style="color:#C0CDD8;font-weight:600;">{label_txt}</span></div>
 </div>
@@ -1557,7 +1555,7 @@ def render_deep_dive():
             padding:14px 16px;margin:4px 0;height:100%;">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:9px;">
         <span style="font-size:0.78rem;font-weight:600;color:#C0CDD8;display:flex;align-items:center;gap:5px;">{dot_html}{name}</span>
-        <span style="font-size:0.72rem;color:#2E4055;font-weight:600;
+        <span style="font-size:0.72rem;color:#5A7888;font-weight:600;
                      background:#0A1520;padding:2px 7px;border-radius:10px;
                      border:1px solid #1A2A40;">{info['points']}/{info['max']}</span>
     </div>
@@ -1565,10 +1563,10 @@ def render_deep_dive():
         <div style="background:{bar_color};width:{pct*100:.0f}%;height:100%;border-radius:3px;
                     box-shadow:0 0 8px {bar_color}44;"></div>
     </div>
-    <div style="font-size:0.7rem;color:#2E4055;margin-bottom:3px;">
-        Valor: <span style="color:#506070;">{value_text}</span>
+    <div style="font-size:0.7rem;color:#5A7888;margin-bottom:3px;">
+        Valor: <span style="color:#7A9AB0;">{value_text}</span>
     </div>
-    <div style="font-size:0.72rem;color:#3A5060;line-height:1.5;">{signal_text}</div>
+    <div style="font-size:0.72rem;color:#5A7888;line-height:1.5;">{signal_text}</div>
 </div>
 """, unsafe_allow_html=True)
 
@@ -1578,7 +1576,7 @@ def render_deep_dive():
     if fib_levels:
         st.markdown('<span class="section-label">Niveis Fibonacci</span>', unsafe_allow_html=True)
         fib_df = pd.DataFrame([
-            {"Nivel": label, "Preco": f"${price:.2f}",
+            {"Nivel": label, "Preco": f"${price:,.2f}",
              "Distancia": f"{((current_price - price) / current_price * 100):+.1f}%"}
             for label, price in fib_levels.items()
         ])
@@ -1678,8 +1676,8 @@ def render_risk():
                 st.markdown("---")
                 c1, c2, c3 = st.columns(3)
                 c1.metric("Tamanho da Posicao", f"{risk['tamanho_posicao']:.4f} unidades")
-                c2.metric("Valor da Posicao", f"${risk['valor_posicao']:.2f}")
-                c3.metric("Perda Maxima", f"${risk['risco_maximo']:.2f}",
+                c2.metric("Valor da Posicao", f"${risk['valor_posicao']:,.2f}")
+                c3.metric("Perda Maxima", f"${risk['risco_maximo']:,.2f}",
                           f"{risk_pct}% do portfolio", delta_color="inverse")
 
                 st.markdown("---")
@@ -1693,16 +1691,16 @@ def render_risk():
                 st.markdown(f"""
 <div style="background:#090F1C;border:1px solid #0F1E2E;border-radius:10px;
             padding:16px 20px;margin-top:12px;">
-    <div style="font-size:0.68rem;color:#2E4055;text-transform:uppercase;
+    <div style="font-size:0.68rem;color:#5A7888;text-transform:uppercase;
                 letter-spacing:1.5px;margin-bottom:10px;">Como interpretar</div>
-    <div style="font-size:0.82rem;color:#3A5060;line-height:1.8;">
-        &mdash; O ATR de <span style="color:#8B9AB0;">${risk['atr']:.2f}</span> ({risk['atr_percentual']}%) indica a volatilidade diaria media<br>
-        &mdash; O stop-loss em <span style="color:#FF4757;">${risk['stop_loss']:.2f}</span> esta a 2&times; ATR do preco atual<br>
-        &mdash; Se o preco cair ate o stop-loss, voce perde no maximo <span style="color:#FF4757;">${risk['risco_maximo']:.2f}</span> ({risk_pct}% do portfolio)<br>
-        &mdash; Para isso, compre no maximo <span style="color:#8B9AB0;">{risk['tamanho_posicao']:.4f} unidades</span> (${risk['valor_posicao']:.2f})
+    <div style="font-size:0.82rem;color:#5A7888;line-height:1.8;">
+        &mdash; O ATR de <span style="color:#8B9AB0;">${risk['atr']:,.2f}</span> ({risk['atr_percentual']}%) indica a volatilidade diaria media<br>
+        &mdash; O stop-loss em <span style="color:#FF4757;">${risk['stop_loss']:,.2f}</span> esta a 2&times; ATR do preco atual<br>
+        &mdash; Se o preco cair ate o stop-loss, voce perde no maximo <span style="color:#FF4757;">${risk['risco_maximo']:,.2f}</span> ({risk_pct}% do portfolio)<br>
+        &mdash; Para isso, compre no maximo <span style="color:#8B9AB0;">{risk['tamanho_posicao']:.4f} unidades</span> (${risk['valor_posicao']:,.2f})
     </div>
     <div style="margin-top:10px;padding-top:10px;border-top:1px solid #0F1E2E;
-                font-size:0.78rem;color:#2E4055;">
+                font-size:0.78rem;color:#5A7888;">
         Regra de ouro: nunca arrisque mais de 2% do portfolio em uma unica operacao.
     </div>
 </div>
@@ -1749,7 +1747,7 @@ def render_risk():
                 fig.add_trace(go.Bar(
                     x=[f"Parcela {p['tranche']}" for p in plan],
                     y=[p["valor"] for p in plan],
-                    text=[f"${p['valor']:.0f} @ ${p['preco']:.2f}" for p in plan],
+                    text=[f"${p['valor']:,.0f} @ ${p['preco']:,.2f}" for p in plan],
                     textposition="outside",
                     marker_color=["#00d4aa", "#3498db", "#f39c12", "#e74c3c", "#9b59b6", "#1abc9c"][:len(plan)],
                 ))
@@ -1960,7 +1958,7 @@ def render_alerts():
         <span style="font-size:0.76rem;color:#4A5568;">Score {alert['score']}/100 &nbsp;|&nbsp; {conf.get('agree_buy',0)}/{conf.get('total',10)} indicadores ({pct}%)</span>
     </div>
     <div style="font-size:0.78rem;color:#4A5568;margin-bottom:4px;">{alert['price']} &nbsp;&mdash;&nbsp; {alert['change_24h']} (24h)</div>
-    <div style="font-size:0.8rem;color:#506070;">{alert['explanation']}</div>
+    <div style="font-size:0.8rem;color:#7A9AB0;">{alert['explanation']}</div>
 </div>""", unsafe_allow_html=True)
     else:
         st.info("Nenhum ativo em observacao (Score 55-71) no momento.")
@@ -2050,7 +2048,7 @@ def render_news():
         <div style="flex:1;">
             <div style="font-size:0.86rem;color:#C0CDD8;font-weight:500;line-height:1.4;margin-bottom:6px;">{article['title']}</div>
             <div style="display:flex;justify-content:space-between;align-items:center;">
-                <span style="font-size:0.72rem;color:#2E4055;">{article['source']} &nbsp;·&nbsp; {article['date']}</span>
+                <span style="font-size:0.72rem;color:#5A7888;">{article['source']} &nbsp;·&nbsp; {article['date']}</span>
                 {link_html}
             </div>
         </div>
@@ -2121,7 +2119,7 @@ def render_portfolio():
                 except Exception:
                     pass
                 db_note = " (salvo no banco)" if db_ok else " (apenas em memoria — banco offline)"
-                st.success(f"{p_asset.upper()}: {p_qty:.6g} un. @ ${p_buy:.2f}{db_note}")
+                st.success(f"{p_asset.upper()}: {p_qty:.6g} un. @ ${p_buy:,.2f}{db_note}")
                 st.rerun()
 
     if not st.session_state.portfolio:
@@ -2152,8 +2150,8 @@ def render_portfolio():
         total_current += current_value
         portfolio_data.append({
             "Ativo": asset_id, "Qtd": info["quantity"],
-            "Compra": f"${info['buy_price']:.2f}", "Atual": f"${price:.2f}",
-            "Valor": f"${current_value:.2f}", "P&L": f"${pnl:.2f}", "P&L%": f"{pnl_pct:+.2f}%",
+            "Compra": f"${info['buy_price']:,.2f}", "Atual": f"${price:,.2f}",
+            "Valor": f"${current_value:,.2f}", "P&L": f"${pnl:,.2f}", "P&L%": f"{pnl_pct:+.2f}%",
             "_current_value": current_value,   # valor numerico para o grafico de pizza
         })
 
@@ -2161,9 +2159,9 @@ def render_portfolio():
     total_pnl_pct = ((total_current - total_invested) / total_invested * 100) if total_invested > 0 else 0.0
 
     c1, c2, c3, c4 = st.columns(4)
-    c1.metric("Investido", f"${total_invested:.2f}")
-    c2.metric("Atual", f"${total_current:.2f}")
-    c3.metric("P&L", f"${total_pnl:.2f}", f"{total_pnl_pct:+.2f}%")
+    c1.metric("Investido", f"${total_invested:,.2f}")
+    c2.metric("Atual", f"${total_current:,.2f}")
+    c3.metric("P&L", f"${total_pnl:,.2f}", f"{total_pnl_pct:+.2f}%")
     c4.metric("Ativos", len(st.session_state.portfolio))
 
     display_df = pd.DataFrame([{k: v for k, v in p.items() if not k.startswith("_")} for p in portfolio_data])
@@ -2256,9 +2254,9 @@ def _simulate_strategy(
             trades.append({
                 "Entrada": position["entry_date"].strftime("%Y-%m-%d"),
                 "Saida": dt.strftime("%Y-%m-%d"),
-                "Preco Entrada": f"${position['entry_price']:.2f}",
-                "Preco Saida": f"${close:.2f}",
-                "P&L": f"${pnl:+.2f}",
+                "Preco Entrada": f"${position['entry_price']:,.2f}",
+                "Preco Saida": f"${close:,.2f}",
+                "P&L": f"${pnl:+,.2f}",
                 "P&L %": f"{pnl_pct:+.2f}%",
                 "Resultado": "Lucro" if pnl >= 0 else "Prejuizo",
                 "_pnl_raw": pnl,
