@@ -68,10 +68,15 @@ button, label, input, select, textarea, a, td, th, li,
 }
 
 /* ─── Background ─── */
-.stApp { background: #060B14; }
+.stApp {
+    background:
+        radial-gradient(ellipse at 15% 0%, rgba(99,102,241,0.07) 0%, transparent 45%),
+        radial-gradient(ellipse at 85% 95%, rgba(56,189,248,0.05) 0%, transparent 45%),
+        #07080F;
+}
 section[data-testid="stSidebar"] {
-    background: #090F1C !important;
-    border-right: 1px solid #1A2A40 !important;
+    background: linear-gradient(180deg, #0A0C1C 0%, #07080F 100%) !important;
+    border-right: 1px solid #181C30 !important;
 }
 section[data-testid="stSidebar"] > div { background: transparent !important; }
 
@@ -81,16 +86,16 @@ footer { visibility: hidden; }
 
 /* ─── Cards ─── */
 .card {
-    background: #0F1923;
-    border: 1px solid #1A2A40;
-    border-radius: 12px;
+    background: linear-gradient(145deg, #0D0F1E, #0A0C18);
+    border: 1px solid #1C2038;
+    border-radius: 14px;
     padding: 20px 24px;
     margin: 8px 0;
     transition: border-color 0.25s, box-shadow 0.25s;
 }
 .card:hover {
-    border-color: rgba(0, 229, 195, 0.22);
-    box-shadow: 0 4px 28px rgba(0, 0, 0, 0.45);
+    border-color: rgba(99, 102, 241, 0.3);
+    box-shadow: 0 4px 32px rgba(99, 102, 241, 0.1);
 }
 
 /* ─── Caixas de Alerta ─── */
@@ -131,11 +136,11 @@ footer { visibility: hidden; }
 
 /* ─── Caixa de Recomendacao ─── */
 .recommendation-box {
-    background: linear-gradient(140deg, #0C1520 0%, #101C2A 100%);
-    border: 1px solid #1A2A40;
-    border-top: 2px solid #00E5C3;
+    background: linear-gradient(140deg, #0D0F1E 0%, #0A0C18 100%);
+    border: 1px solid #1C2038;
+    border-top: 2px solid #6366F1;
     padding: 18px 22px;
-    border-radius: 10px;
+    border-radius: 12px;
     margin: 12px 0;
     line-height: 1.75;
     font-size: 0.9rem;
@@ -154,7 +159,7 @@ footer { visibility: hidden; }
     font-size: 2.4rem;
     font-weight: 700;
     margin: 0 0 6px 0;
-    background: linear-gradient(135deg, #00E5C3, #4A9EFF);
+    background: linear-gradient(135deg, #818CF8, #38BDF8);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -200,9 +205,9 @@ footer { visibility: hidden; }
 
 /* ─── Metrics ─── */
 [data-testid="stMetric"] {
-    background: #0F1923 !important;
-    border: 1px solid #1A2A40 !important;
-    border-radius: 10px !important;
+    background: linear-gradient(145deg, #0D0F1E, #0A0C18) !important;
+    border: 1px solid #1C2038 !important;
+    border-radius: 12px !important;
     padding: 14px 18px !important;
 }
 [data-testid="stMetricLabel"] > div {
@@ -215,8 +220,8 @@ footer { visibility: hidden; }
 
 /* ─── Botoes ─── */
 .stButton > button {
-    background: linear-gradient(135deg, #00E5C3, #00B8A0) !important;
-    color: #060B14 !important;
+    background: linear-gradient(135deg, #6366F1, #4F46E5) !important;
+    color: #fff !important;
     border: none !important;
     font-weight: 600 !important;
     border-radius: 8px !important;
@@ -226,7 +231,7 @@ footer { visibility: hidden; }
 }
 .stButton > button:hover {
     transform: translateY(-1px) !important;
-    box-shadow: 0 6px 20px rgba(0, 229, 195, 0.28) !important;
+    box-shadow: 0 6px 22px rgba(99, 102, 241, 0.35) !important;
 }
 
 /* ─── Fix: esconder botao de colapso (keyboard_double bug) ─── */
@@ -253,14 +258,14 @@ div[data-testid="stSidebar"] .stRadio > div > label {
 }
 /* Hover */
 div[data-testid="stSidebar"] .stRadio > div > label:hover {
-    background: rgba(0,229,195,0.05) !important;
-    border-left-color: rgba(0,229,195,0.35) !important;
+    background: rgba(99,102,241,0.06) !important;
+    border-left-color: rgba(99,102,241,0.4) !important;
     color: #A0B5C5 !important;
 }
 /* Ativo — detecta o radio checked via :has() */
 div[data-testid="stSidebar"] .stRadio > div > label:has(input:checked) {
-    background: rgba(0,229,195,0.09) !important;
-    border-left-color: #00E5C3 !important;
+    background: rgba(99,102,241,0.1) !important;
+    border-left-color: #818CF8 !important;
     color: #E8EDF5 !important;
     font-weight: 600 !important;
 }
@@ -270,9 +275,9 @@ div[data-testid="stSidebar"] .stRadio [data-baseweb="radio"] { gap: 0 !important
 
 /* Botao de atualizar no sidebar — estilo diferente do botao principal */
 div[data-testid="stSidebar"] .stButton > button {
-    background: rgba(0,229,195,0.06) !important;
-    color: #00E5C3 !important;
-    border: 1px solid rgba(0,229,195,0.18) !important;
+    background: rgba(99,102,241,0.08) !important;
+    color: #818CF8 !important;
+    border: 1px solid rgba(99,102,241,0.22) !important;
     font-weight: 500 !important;
     font-size: 0.83rem !important;
     letter-spacing: 0.3px !important;
@@ -282,18 +287,18 @@ div[data-testid="stSidebar"] .stButton > button {
     border-radius: 8px !important;
 }
 div[data-testid="stSidebar"] .stButton > button:hover {
-    background: rgba(0,229,195,0.12) !important;
+    background: rgba(99,102,241,0.14) !important;
     transform: none !important;
     box-shadow: none !important;
 }
 
 /* ─── Abas ─── */
 [data-baseweb="tab-list"] {
-    background: #090F1C !important;
+    background: #0A0C1A !important;
     border-radius: 10px !important;
     gap: 6px !important;
     padding: 6px !important;
-    border: 1px solid #1A2A40 !important;
+    border: 1px solid #1C2038 !important;
 }
 [data-baseweb="tab"] {
     border-radius: 7px !important;
@@ -305,8 +310,8 @@ div[data-testid="stSidebar"] .stButton > button:hover {
     transition: all 0.15s !important;
 }
 [data-baseweb="tab"][aria-selected="true"] {
-    background: rgba(0,229,195,0.1) !important;
-    color: #00E5C3 !important;
+    background: rgba(99,102,241,0.12) !important;
+    color: #818CF8 !important;
     font-weight: 600 !important;
 }
 
@@ -328,10 +333,10 @@ div[data-testid="stSidebar"] .stButton > button:hover {
 .alert-sell     { animation: slide-in 0.25s ease; }
 
 /* ─── Expander ─── */
-[data-testid="stExpander"] { border: 1px solid #1A2A40 !important; border-radius: 8px !important; }
+[data-testid="stExpander"] { border: 1px solid #1C2038 !important; border-radius: 10px !important; }
 
 /* ─── DataFrames ─── */
-[data-testid="stDataFrame"] { border: 1px solid #1A2A40 !important; border-radius: 10px !important; overflow: hidden; }
+[data-testid="stDataFrame"] { border: 1px solid #1C2038 !important; border-radius: 10px !important; overflow: hidden; }
 
 /* ─── Scrollbar ─── */
 ::-webkit-scrollbar { width: 5px; height: 5px; }
@@ -344,14 +349,17 @@ hr { border-color: #1A2A40 !important; margin: 20px 0 !important; }
 
 /* ─── Label de secao ─── */
 .section-label {
-    font-size: 0.68rem;
+    font-size: 0.67rem;
     text-transform: uppercase;
-    letter-spacing: 2px;
-    color: #587888;
+    letter-spacing: 2.5px;
+    background: linear-gradient(90deg, #818CF8, #38BDF8);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
     margin: 28px 0 12px 0;
     display: block;
     padding-bottom: 8px;
-    border-bottom: 1px solid #0F1E2E;
+    border-bottom: 1px solid #161C30;
 }
 
 /* ─── Header de pagina com barra lateral ─── */
@@ -365,15 +373,18 @@ hr { border-color: #1A2A40 !important; margin: 20px 0 !important; }
 .page-header-bar {
     width: 3px;
     height: 36px;
-    background: linear-gradient(180deg, #00E5C3, #4A9EFF);
+    background: linear-gradient(180deg, #818CF8, #38BDF8);
     border-radius: 2px;
     flex-shrink: 0;
     margin-top: 3px;
 }
 .page-header h2 {
-    font-size: 1.55rem;
+    font-size: 1.6rem;
     font-weight: 700;
-    color: #E8EDF5;
+    background: linear-gradient(135deg, #E8EDF5 0%, #A5B4FC 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
     letter-spacing: -0.5px;
     margin: 0 0 4px 0;
     line-height: 1.2;
@@ -448,9 +459,9 @@ hr { border-color: #1A2A40 !important; margin: 20px 0 !important; }
     margin: 14px 0 24px 0;
 }
 .heat-tile {
-    background: #0C1522;
-    border: 1px solid #1A2A40;
-    border-radius: 10px;
+    background: linear-gradient(145deg, #0D0F1E 0%, #0A0C18 100%);
+    border: 1px solid #1C2038;
+    border-radius: 12px;
     padding: 14px 15px;
     transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
     position: relative;
@@ -476,19 +487,23 @@ hr { border-color: #1A2A40 !important; margin: 20px 0 !important; }
 
 /* ─── Glass metric cards ─── */
 .g-metric {
-    background: #0C1522;
-    border: 1px solid #1A2A40;
+    background: linear-gradient(145deg, #0D0F1E 0%, #0A0C18 100%);
+    border: 1px solid #1C2038;
     border-radius: 14px;
     padding: 20px 22px 18px 22px;
     position: relative;
     overflow: hidden;
-    transition: box-shadow 0.2s;
+    transition: box-shadow 0.2s, border-color 0.2s;
+}
+.g-metric:hover {
+    border-color: rgba(99,102,241,0.25);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.5);
 }
 .g-metric::after {
     content: '';
     position: absolute;
     inset: 0;
-    background: radial-gradient(ellipse at 20% 0%, var(--gm-glow, rgba(0,229,195,0.06)) 0%, transparent 70%);
+    background: radial-gradient(ellipse at 20% 0%, var(--gm-glow, rgba(99,102,241,0.06)) 0%, transparent 70%);
     pointer-events: none;
 }
 .g-metric .gm-label {
@@ -575,16 +590,16 @@ _age_label = "agora" if _mins_ago == 0 else f"ha {_mins_ago} min"
 st.sidebar.markdown(f"""
 <div style="padding:20px 4px 18px 4px; border-bottom:1px solid #0F1E2E; margin-bottom:16px;">
     <div style="font-size:1.6rem; font-weight:700;
-                background:linear-gradient(135deg,#00E5C3 0%,#4A9EFF 100%);
+                background:linear-gradient(135deg,#818CF8 0%,#38BDF8 100%);
                 -webkit-background-clip:text; -webkit-text-fill-color:transparent;
                 background-clip:text; letter-spacing:-0.8px; line-height:1;">BotCripto</div>
     <div style="font-size:0.6rem; color:#5A7888; text-transform:uppercase;
                 letter-spacing:2.2px; margin-top:5px; margin-bottom:10px;">Monitor Financeiro v2</div>
     <div style="display:flex;align-items:center;gap:7px;margin-bottom:4px;">
-        <div style="width:6px;height:6px;background:#00E5C3;border-radius:50%;
+        <div style="width:6px;height:6px;background:#818CF8;border-radius:50%;
                     flex-shrink:0;
                     animation:live-blink 1.8s ease-in-out infinite;
-                    box-shadow:0 0 6px rgba(0,229,195,0.8);"></div>
+                    box-shadow:0 0 6px rgba(129,140,248,0.8);"></div>
         <span style="font-size:0.62rem;color:#5A7888;text-transform:uppercase;
                      letter-spacing:1.5px;">Cache 10 min &bull; Cripto</span>
     </div>
@@ -1747,14 +1762,24 @@ def render_risk():
                 fig.add_trace(go.Bar(
                     x=[f"Parcela {p['tranche']}" for p in plan],
                     y=[p["valor"] for p in plan],
-                    text=[f"${p['valor']:,.0f} @ ${p['preco']:,.2f}" for p in plan],
+                    text=[f"Alocar ${p['valor']:,.0f}" for p in plan],
                     textposition="outside",
-                    marker_color=["#00d4aa", "#3498db", "#f39c12", "#e74c3c", "#9b59b6", "#1abc9c"][:len(plan)],
+                    customdata=[[p["preco"], p["valor"], p["tranche"]] for p in plan],
+                    hovertemplate=(
+                        "<b>Parcela %{customdata[2]}</b><br>"
+                        "Valor a investir: <b>$%{customdata[1]:,.0f}</b><br>"
+                        "Preço alvo de compra: <b>$%{customdata[0]:,.2f}</b>"
+                        "<extra></extra>"
+                    ),
+                    marker_color=["#6366F1", "#38BDF8", "#F59E0B", "#F43F5E", "#A78BFA", "#34D399"][:len(plan)],
                 ))
                 fig.update_layout(
-                    height=300, template="plotly_dark", paper_bgcolor="#0e1117",
-                    yaxis_title="Valor (USD)", showlegend=False,
-                    margin=dict(l=50, r=20, t=20, b=20),
+                    height=300, template="plotly_dark",
+                    paper_bgcolor="#07080F", plot_bgcolor="#07080F",
+                    yaxis_title="Valor a Investir (USD)", showlegend=False,
+                    margin=dict(l=50, r=20, t=30, b=20),
+                    yaxis=dict(gridcolor="#161C30"),
+                    xaxis=dict(gridcolor="#161C30"),
                 )
                 st.plotly_chart(fig, use_container_width=True)
 
