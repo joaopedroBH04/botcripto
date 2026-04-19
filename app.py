@@ -13,7 +13,7 @@ import time
 from datetime import datetime
 
 from config import (
-    CRYPTO_IDS, STOCK_TICKERS,
+    CRYPTO_IDS, STOCK_TICKERS, BR_STOCK_TICKERS, GLOBAL_STOCK_TICKERS,
     BUY_CONFIDENCE_STRONG, BUY_CONFIDENCE_MODERATE, SELL_CONFIDENCE,
     FIBONACCI_LEVELS, FIBONACCI_LABELS,
     DEFAULT_PORTFOLIO_VALUE, DEFAULT_RISK_PER_TRADE,
@@ -973,9 +973,11 @@ def _compute_all_scores(all_assets: pd.DataFrame, fg_val: int) -> list[dict]:
         dip_info = classify_dip(df)
         if score_result:
             confluence = score_result.get("confluence", {})
+            ticker = row["id"]
+            asset_tipo = "Acao BR" if ticker in BR_STOCK_TICKERS else "Acao EUA"
             scores.append({
                 "Ativo": f"{row['name']} ({row['symbol']})",
-                "Tipo": "Acao",
+                "Tipo": asset_tipo,
                 "Preco": format_number(row["price"]),
                 "24h": f"{row['change_24h']:+.2f}%",
                 "Score": score_result["score"],
@@ -1212,7 +1214,7 @@ def render_overview():
         st.markdown(render_glass_metric(
             "Ativos Monitorados",
             str(total_assets),
-            f"{len(CRYPTO_IDS)} criptos &middot; {len(STOCK_TICKERS)} acoes/ETFs",
+            f"{len(CRYPTO_IDS)} criptos &middot; {len(BR_STOCK_TICKERS)} B3 &middot; {len(GLOBAL_STOCK_TICKERS)} EUA/ETF",
             "#4A9EFF", "rgba(74,158,255,0.22)"
         ), unsafe_allow_html=True)
 
@@ -1235,18 +1237,20 @@ def render_overview():
     st.markdown(render_ticker_html(scores), unsafe_allow_html=True)
 
     # ── Estatisticas de zona ──────────────────────────────────────────────
-    n_strong = int((scores_df["Score"] >= BUY_CONFIDENCE_STRONG).sum())
-    n_buy    = int(((scores_df["Score"] >= BUY_CONFIDENCE_MODERATE) & (scores_df["Score"] < BUY_CONFIDENCE_STRONG)).sum())
-    n_neutral= int(((scores_df["Score"] >= SELL_CONFIDENCE) & (scores_df["Score"] < BUY_CONFIDENCE_MODERATE)).sum())
-    n_sell   = int((scores_df["Score"] < SELL_CONFIDENCE).sum())
-    avg_score= round(float(scores_df["Score"].mean()), 1)
+    n_strong  = int((scores_df["Score"] >= BUY_CONFIDENCE_STRONG).sum())
+    n_buy     = int(((scores_df["Score"] >= BUY_CONFIDENCE_MODERATE) & (scores_df["Score"] < BUY_CONFIDENCE_STRONG)).sum())
+    n_neutral = int(((scores_df["Score"] >= SELL_CONFIDENCE) & (scores_df["Score"] < BUY_CONFIDENCE_MODERATE)).sum())
+    n_sell    = int((scores_df["Score"] < SELL_CONFIDENCE).sum())
+    avg_score = round(float(scores_df["Score"].mean()), 1)
+    n_br      = int((scores_df["Tipo"] == "Acao BR").sum())
 
-    zc1, zc2, zc3, zc4, zc5 = st.columns(5)
-    zc1.metric("Compra Forte", n_strong, help="Score >= 72")
-    zc2.metric("Compra",       n_buy,    help="Score 55-71")
+    zc1, zc2, zc3, zc4, zc5, zc6 = st.columns(6)
+    zc1.metric("Compra Forte", n_strong,  help="Score >= 72")
+    zc2.metric("Compra",       n_buy,     help="Score 55-71")
     zc3.metric("Neutro",       n_neutral, help="Score 30-54")
-    zc4.metric("Venda",        n_sell,   help="Score < 30")
+    zc4.metric("Venda",        n_sell,    help="Score < 30")
     zc5.metric("Media Score",  avg_score)
+    zc6.metric("B3 (Brasil)",  n_br,      help="Ativos da Bolsa do Brasil monitorados")
     st.markdown("---")
 
     # ── Divergencias bullish ──────────────────────────────────────────────
@@ -1301,7 +1305,8 @@ def render_overview():
     fc1, fc2, fc3 = st.columns([2, 2, 3])
     with fc1:
         tipo_filter = st.multiselect(
-            "Tipo", ["Cripto", "Acao"], default=["Cripto", "Acao"],
+            "Tipo", ["Cripto", "Acao BR", "Acao EUA"],
+            default=["Cripto", "Acao BR", "Acao EUA"],
             key="rank_tipo", label_visibility="collapsed",
             placeholder="Filtrar por tipo..."
         )
@@ -1403,12 +1408,15 @@ def render_deep_dive():
     <p>10 indicadores tecnicos + scoring + gestao de risco por ativo</p></div>
 </div>""", unsafe_allow_html=True)
 
-    asset_type = st.radio("Tipo de ativo", ["Criptomoeda", "Acao / ETF"], horizontal=True)
+    asset_type = st.radio("Tipo de ativo", ["Criptomoeda", "Acao BR (B3)", "Acao EUA / ETF"], horizontal=True)
     if asset_type == "Criptomoeda":
         asset_id = st.selectbox("Ativo", CRYPTO_IDS, format_func=lambda x: x.title())
         a_type = "crypto"
+    elif asset_type == "Acao BR (B3)":
+        asset_id = st.selectbox("Ativo", BR_STOCK_TICKERS)
+        a_type = "stock"
     else:
-        asset_id = st.selectbox("Ativo", STOCK_TICKERS)
+        asset_id = st.selectbox("Ativo", GLOBAL_STOCK_TICKERS)
         a_type = "stock"
 
     with st.spinner(f"Carregando analise de {asset_id.title()}..."):
@@ -1657,14 +1665,17 @@ def render_risk():
             "e calcular quanto investir sem arriscar demais do seu portfolio."
         )
 
-        asset_type_r = st.radio("Tipo de ativo", ["Criptomoeda", "Acao / ETF"], horizontal=True, key="risk_type")
+        asset_type_r = st.radio("Tipo de ativo", ["Criptomoeda", "Acao BR (B3)", "Acao EUA / ETF"], horizontal=True, key="risk_type")
         col1, col2 = st.columns(2)
         with col1:
             if asset_type_r == "Criptomoeda":
                 asset_id_r = st.selectbox("Ativo", CRYPTO_IDS, format_func=lambda x: x.title(), key="risk_asset")
                 a_type_r = "crypto"
+            elif asset_type_r == "Acao BR (B3)":
+                asset_id_r = st.selectbox("Ativo", BR_STOCK_TICKERS, key="risk_asset")
+                a_type_r = "stock"
             else:
-                asset_id_r = st.selectbox("Ativo", STOCK_TICKERS, key="risk_asset")
+                asset_id_r = st.selectbox("Ativo", GLOBAL_STOCK_TICKERS, key="risk_asset")
                 a_type_r = "stock"
         with col2:
             portfolio_val = st.number_input("Valor do seu Portfolio (USD)", value=float(DEFAULT_PORTFOLIO_VALUE),
@@ -1731,12 +1742,15 @@ def render_risk():
 
         col1, col2, col3 = st.columns(3)
         with col1:
-            dca_type = st.selectbox("Tipo", ["Criptomoeda", "Acao/ETF"], key="dca_type")
+            dca_type = st.selectbox("Tipo", ["Criptomoeda", "Acao BR (B3)", "Acao EUA / ETF"], key="dca_type")
             if dca_type == "Criptomoeda":
                 dca_asset = st.selectbox("Ativo", CRYPTO_IDS, format_func=lambda x: x.title(), key="dca_asset")
                 dca_a_type = "crypto"
+            elif dca_type == "Acao BR (B3)":
+                dca_asset = st.selectbox("Ativo", BR_STOCK_TICKERS, key="dca_asset")
+                dca_a_type = "stock"
             else:
-                dca_asset = st.selectbox("Ativo", STOCK_TICKERS, key="dca_asset")
+                dca_asset = st.selectbox("Ativo", GLOBAL_STOCK_TICKERS, key="dca_asset")
                 dca_a_type = "stock"
         with col2:
             dca_amount = st.number_input("Valor total a investir (USD)", value=1000.0, min_value=50.0, step=100.0)
@@ -2112,15 +2126,17 @@ def render_portfolio():
 
     # ── Formulario de adicao ──────────────────────────────────────────────
     with st.expander("Adicionar ativo ao portfolio", expanded=not bool(st.session_state.portfolio)):
-        p_type = st.radio("Tipo", ["crypto", "stock"], key="p_type", horizontal=True,
-                          format_func=lambda x: "Cripto" if x == "crypto" else "Acao")
+        p_type = st.radio("Tipo", ["crypto", "br_stock", "us_stock"], key="p_type", horizontal=True,
+                          format_func=lambda x: "Cripto" if x == "crypto" else ("Acao BR (B3)" if x == "br_stock" else "Acao EUA"))
         col1, col2, col3 = st.columns(3)
         with col1:
             if p_type == "crypto":
                 p_asset = st.selectbox("Ativo", CRYPTO_IDS, key="p_asset",
                                        format_func=lambda x: x.title())
+            elif p_type == "br_stock":
+                p_asset = st.selectbox("Ativo", BR_STOCK_TICKERS, key="p_asset")
             else:
-                p_asset = st.selectbox("Ativo", STOCK_TICKERS, key="p_asset")
+                p_asset = st.selectbox("Ativo", GLOBAL_STOCK_TICKERS, key="p_asset")
         with col2:
             p_qty = st.number_input("Quantidade", min_value=0.0, step=0.01, key="p_qty",
                                     help="Numero de unidades/acoes adquiridas")
@@ -2319,11 +2335,13 @@ def render_backtesting():
     # ── Configuracao ─────────────────────────────────────────────────────
     col1, col2 = st.columns(2)
     with col1:
-        bt_type = st.selectbox("Tipo", ["Criptomoeda", "Acao/ETF"], key="bt_type")
+        bt_type = st.selectbox("Tipo", ["Criptomoeda", "Acao BR (B3)", "Acao EUA / ETF"], key="bt_type")
         if bt_type == "Criptomoeda":
             bt_asset = st.selectbox("Ativo", CRYPTO_IDS, format_func=lambda x: x.title(), key="bt_asset")
+        elif bt_type == "Acao BR (B3)":
+            bt_asset = st.selectbox("Ativo", BR_STOCK_TICKERS, key="bt_asset")
         else:
-            bt_asset = st.selectbox("Ativo", STOCK_TICKERS, key="bt_asset")
+            bt_asset = st.selectbox("Ativo", GLOBAL_STOCK_TICKERS, key="bt_asset")
     with col2:
         bt_capital = st.number_input("Capital inicial (USD)", value=10000.0, min_value=100.0, step=500.0, key="bt_cap")
         col_buy, col_sell = st.columns(2)

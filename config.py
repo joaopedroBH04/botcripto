@@ -15,17 +15,21 @@ CRYPTO_IDS = [
 # Criptos extras (descomente para monitorar mais, mas pode demorar mais):
 # CRYPTO_IDS += ["chainlink", "polkadot", "polygon-ecosystem-token"]
 
-# --- Acoes/ETFs monitorados (tickers do Yahoo Finance) ---
-# Use .SA para acoes da B3 (Brasil)
-STOCK_TICKERS = [
-    # Brasil
+# --- Acoes da B3 (Bolsa do Brasil) ---
+# Use .SA para acoes negociadas na B3
+BR_STOCK_TICKERS = [
     "PETR4.SA", "VALE3.SA", "ITUB4.SA", "BBAS3.SA", "WEGE3.SA",
-    "ABEV3.SA", "MGLU3.SA", "RENT3.SA",
-    # EUA
-    "AAPL", "MSFT", "GOOGL", "AMZN", "NVDA", "TSLA",
-    # ETFs
-    "VOO", "QQQ", "BOVA11.SA", "IVVB11.SA",
+    "ABEV3.SA", "MGLU3.SA", "RENT3.SA", "BOVA11.SA", "IVVB11.SA",
 ]
+
+# --- Acoes e ETFs internacionais (EUA) ---
+GLOBAL_STOCK_TICKERS = [
+    "AAPL", "MSFT", "GOOGL", "AMZN", "NVDA", "TSLA",
+    "VOO", "QQQ",
+]
+
+# --- Lista completa de acoes (B3 + EUA) ---
+STOCK_TICKERS = BR_STOCK_TICKERS + GLOBAL_STOCK_TICKERS
 
 # --- Limiares de analise tecnica ---
 RSI_OVERSOLD = 30
