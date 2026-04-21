@@ -251,7 +251,7 @@ div[data-testid="stSidebar"] .stRadio > div > label {
     transition: background 0.15s, border-color 0.15s, color 0.15s !important;
     font-size: 0.855rem !important;
     font-weight: 400 !important;
-    color: #506070 !important;
+    color: #7A8FA0 !important;
     letter-spacing: 0.3px !important;
     margin: 1px 0 !important;
     white-space: nowrap !important;
@@ -306,7 +306,7 @@ div[data-testid="stSidebar"] .stButton > button:hover {
     padding: 8px 20px !important;
     font-weight: 500 !important;
     letter-spacing: 0.2px !important;
-    color: #506070 !important;
+    color: #7A8FA0 !important;
     transition: all 0.15s !important;
 }
 [data-baseweb="tab"][aria-selected="true"] {
@@ -603,14 +603,14 @@ st.sidebar.markdown(f"""
         <span style="font-size:0.62rem;color:#5A7888;text-transform:uppercase;
                      letter-spacing:1.5px;">Cache 10 min &bull; Cripto</span>
     </div>
-    <div style="font-size:0.6rem;color:#3A5568;padding-left:13px;">
+    <div style="font-size:0.6rem;color:#6A8090;padding-left:13px;">
         Pagina carregada {_age_label} &nbsp;&bull;&nbsp; {_now.strftime('%H:%M')}
     </div>
 </div>
 """, unsafe_allow_html=True)
 
 st.sidebar.markdown("""
-<div style="font-size:0.62rem;color:#4A6275;text-transform:uppercase;
+<div style="font-size:0.62rem;color:#6A8090;text-transform:uppercase;
             letter-spacing:2px;margin-bottom:6px;padding:0 4px;">Menu</div>
 """, unsafe_allow_html=True)
 
@@ -657,12 +657,12 @@ st.sidebar.markdown("""
             border:1px solid #0F1E2E;">
     <div style="font-size:0.65rem;color:#5A7888;text-transform:uppercase;
                 letter-spacing:1.2px;margin-bottom:6px;">Aviso Legal</div>
-    <div style="font-size:0.72rem;color:#4A6275;line-height:1.6;">
+    <div style="font-size:0.72rem;color:#7A9AB0;line-height:1.6;">
         Este sistema e apenas informativo e nao constitui recomendacao de investimento.
         Sempre faca sua propria analise antes de operar.
     </div>
 </div>
-<div style="margin-top:14px;font-size:0.62rem;color:#3A5060;text-align:center;
+<div style="margin-top:14px;font-size:0.62rem;color:#5A7888;text-align:center;
             letter-spacing:0.5px;">BotCripto v2 &nbsp;·&nbsp; open source</div>
 """, unsafe_allow_html=True)
 
@@ -1100,7 +1100,7 @@ def render_ticker_html(scores: list) -> str:
             <span style="font-size:0.75rem;font-weight:700;color:{color};
                          font-family:'Courier New',monospace;">{symbol} {change}</span>
         </span>
-        <span style="color:#0F1E2E;font-size:0.6rem;">·</span>"""
+        <span style="color:#2E4A60;font-size:0.6rem;">·</span>"""
     doubled = items * 2  # duplicar para loop seamless
     return f"""
 <div class="ticker-wrap">
@@ -1504,14 +1504,14 @@ def render_deep_dive():
     <div class="gm-sub">indicadores concordam &middot; {pct}%</div>
     <div class="gm-accent-bar"></div>
 </div>
-<div style="background:#0C1522;border:1px solid #1A2A40;border-radius:10px;
-            padding:12px 16px;font-size:0.82rem;color:#7A9AB0;line-height:1.8;">
-    <div><span style="color:#5A7888;font-size:0.68rem;text-transform:uppercase;
-                       letter-spacing:1px;">Tendencia</span><br>
-         <span style="color:#C0CDD8;font-weight:600;">{trend_txt}</span></div>
-    <div style="margin-top:6px;"><span style="color:#5A7888;font-size:0.68rem;text-transform:uppercase;
-                       letter-spacing:1px;">Classificacao</span><br>
-         <span style="color:#C0CDD8;font-weight:600;">{label_txt}</span></div>
+<div style="background:linear-gradient(145deg,#0D0F1E,#0A0C18);border:1px solid #1C2038;
+            border-radius:12px;padding:14px 18px;font-size:0.82rem;color:#A0B5C5;line-height:1.8;">
+    <div><span style="color:#6A90A8;font-size:0.68rem;text-transform:uppercase;
+                       letter-spacing:1.5px;">Tendencia</span><br>
+         <span style="color:#E8EDF5;font-weight:600;font-size:0.9rem;">{trend_txt}</span></div>
+    <div style="margin-top:10px;"><span style="color:#6A90A8;font-size:0.68rem;text-transform:uppercase;
+                       letter-spacing:1.5px;">Classificacao</span><br>
+         <span style="color:#E8EDF5;font-weight:600;font-size:0.9rem;">{label_txt}</span></div>
 </div>
 """, unsafe_allow_html=True)
 
@@ -1574,22 +1574,22 @@ def render_deep_dive():
                     signal_text = info.get('signal', '').replace('<','&lt;').replace('>','&gt;')
                     value_text  = str(info.get('value', 'N/A'))
                     st.markdown(f"""
-<div style="background:#0F1923;border:1px solid #1A2A40;border-radius:10px;
-            padding:14px 16px;margin:4px 0;height:100%;">
+<div style="background:linear-gradient(145deg,#0D0F1E,#0A0C18);border:1px solid #1C2038;
+            border-radius:12px;padding:14px 16px;margin:4px 0;height:100%;">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:9px;">
-        <span style="font-size:0.78rem;font-weight:600;color:#C0CDD8;display:flex;align-items:center;gap:5px;">{dot_html}{name}</span>
-        <span style="font-size:0.72rem;color:#5A7888;font-weight:600;
-                     background:#0A1520;padding:2px 7px;border-radius:10px;
-                     border:1px solid #1A2A40;">{info['points']}/{info['max']}</span>
+        <span style="font-size:0.78rem;font-weight:600;color:#D0DDE8;display:flex;align-items:center;gap:5px;">{dot_html}{name}</span>
+        <span style="font-size:0.72rem;color:#A0B8C8;font-weight:600;
+                     background:rgba(99,102,241,0.1);padding:2px 8px;border-radius:8px;
+                     border:1px solid rgba(99,102,241,0.2);">{info['points']}/{info['max']}</span>
     </div>
-    <div style="background:#0A1520;border-radius:3px;height:4px;overflow:hidden;margin-bottom:10px;">
-        <div style="background:{bar_color};width:{pct*100:.0f}%;height:100%;border-radius:3px;
-                    box-shadow:0 0 8px {bar_color}44;"></div>
+    <div style="background:#0A0C18;border-radius:4px;height:5px;overflow:hidden;margin-bottom:10px;">
+        <div style="background:{bar_color};width:{pct*100:.0f}%;height:100%;border-radius:4px;
+                    box-shadow:0 0 10px {bar_color}55;"></div>
     </div>
-    <div style="font-size:0.7rem;color:#5A7888;margin-bottom:3px;">
-        Valor: <span style="color:#7A9AB0;">{value_text}</span>
+    <div style="font-size:0.72rem;color:#7A9AB0;margin-bottom:4px;">
+        Valor: <span style="color:#B0C8D8;font-weight:500;">{value_text}</span>
     </div>
-    <div style="font-size:0.72rem;color:#5A7888;line-height:1.5;">{signal_text}</div>
+    <div style="font-size:0.73rem;color:#8B9AB0;line-height:1.6;">{signal_text}</div>
 </div>
 """, unsafe_allow_html=True)
 
@@ -1715,18 +1715,18 @@ def render_risk():
 
                 # Explicacao inline (sem expander para evitar bug de icone)
                 st.markdown(f"""
-<div style="background:#090F1C;border:1px solid #0F1E2E;border-radius:10px;
-            padding:16px 20px;margin-top:12px;">
-    <div style="font-size:0.68rem;color:#5A7888;text-transform:uppercase;
+<div style="background:linear-gradient(145deg,#0D0F1E,#0A0C18);border:1px solid #1C2038;
+            border-radius:12px;padding:16px 20px;margin-top:12px;">
+    <div style="font-size:0.68rem;color:#6A90A8;text-transform:uppercase;
                 letter-spacing:1.5px;margin-bottom:10px;">Como interpretar</div>
-    <div style="font-size:0.82rem;color:#5A7888;line-height:1.8;">
-        &mdash; O ATR de <span style="color:#8B9AB0;">${risk['atr']:,.2f}</span> ({risk['atr_percentual']}%) indica a volatilidade diaria media<br>
-        &mdash; O stop-loss em <span style="color:#FF4757;">${risk['stop_loss']:,.2f}</span> esta a 2&times; ATR do preco atual<br>
-        &mdash; Se o preco cair ate o stop-loss, voce perde no maximo <span style="color:#FF4757;">${risk['risco_maximo']:,.2f}</span> ({risk_pct}% do portfolio)<br>
-        &mdash; Para isso, compre no maximo <span style="color:#8B9AB0;">{risk['tamanho_posicao']:.4f} unidades</span> (${risk['valor_posicao']:,.2f})
+    <div style="font-size:0.83rem;color:#A0B5C5;line-height:1.9;">
+        &mdash; O ATR de <span style="color:#C0CDD8;font-weight:500;">${risk['atr']:,.2f}</span> ({risk['atr_percentual']}%) indica a volatilidade diaria media<br>
+        &mdash; O stop-loss em <span style="color:#FF4757;font-weight:500;">${risk['stop_loss']:,.2f}</span> esta a 2&times; ATR do preco atual<br>
+        &mdash; Se o preco cair ate o stop-loss, voce perde no maximo <span style="color:#FF4757;font-weight:500;">${risk['risco_maximo']:,.2f}</span> ({risk_pct}% do portfolio)<br>
+        &mdash; Para isso, compre no maximo <span style="color:#C0CDD8;font-weight:500;">{risk['tamanho_posicao']:.4f} unidades</span> (${risk['valor_posicao']:,.2f})
     </div>
-    <div style="margin-top:10px;padding-top:10px;border-top:1px solid #0F1E2E;
-                font-size:0.78rem;color:#5A7888;">
+    <div style="margin-top:10px;padding-top:10px;border-top:1px solid #1C2038;
+                font-size:0.79rem;color:#7A9AB0;">
         Regra de ouro: nunca arrisque mais de 2% do portfolio em uma unica operacao.
     </div>
 </div>
@@ -1953,10 +1953,11 @@ def render_alerts():
             <div class="alert-buy">
                 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
                     <strong style="font-size:0.95rem;color:#E8EDF5;">{alert['name']}</strong>
-                    <span style="font-size:0.78rem;color:#4A5568;">Score {alert['score']}/100 &nbsp;|&nbsp; {conf.get('agree_buy',0)}/{conf.get('total',10)} indicadores</span>
+                    <span style="font-size:0.78rem;color:#A0B8C8;background:rgba(0,229,195,0.07);
+                                 padding:2px 8px;border-radius:6px;">Score {alert['score']}/100 &nbsp;|&nbsp; {conf.get('agree_buy',0)}/{conf.get('total',10)} indicadores</span>
                 </div>
-                <div style="font-size:0.8rem;color:#4A5568;margin-bottom:6px;">{alert['price']} &nbsp;&mdash;&nbsp; {alert['change_24h']} (24h)</div>
-                <div style="font-size:0.83rem;color:#8B9AB0;">{alert['explanation']}</div>
+                <div style="font-size:0.82rem;color:#B0C5D5;margin-bottom:6px;font-weight:500;">{alert['price']} &nbsp;&mdash;&nbsp; {alert['change_24h']} (24h)</div>
+                <div style="font-size:0.83rem;color:#A0B5C5;line-height:1.6;">{alert['explanation']}</div>
             </div>
             """, unsafe_allow_html=True)
     else:
@@ -1974,10 +1975,11 @@ def render_alerts():
             <div class="alert-sell">
                 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
                     <strong style="font-size:0.95rem;color:#E8EDF5;">{alert['name']}</strong>
-                    <span style="font-size:0.78rem;color:#4A5568;">Score {alert['score']}/100</span>
+                    <span style="font-size:0.78rem;color:#A0B8C8;background:rgba(255,71,87,0.07);
+                                 padding:2px 8px;border-radius:6px;">Score {alert['score']}/100</span>
                 </div>
-                <div style="font-size:0.8rem;color:#4A5568;margin-bottom:6px;">{alert['price']} &nbsp;&mdash;&nbsp; {alert['change_24h']} (24h)</div>
-                <div style="font-size:0.83rem;color:#8B9AB0;">{alert['explanation']}</div>
+                <div style="font-size:0.82rem;color:#B0C5D5;margin-bottom:6px;font-weight:500;">{alert['price']} &nbsp;&mdash;&nbsp; {alert['change_24h']} (24h)</div>
+                <div style="font-size:0.83rem;color:#A0B5C5;line-height:1.6;">{alert['explanation']}</div>
             </div>
             """, unsafe_allow_html=True)
     else:
@@ -1990,14 +1992,15 @@ def render_alerts():
             conf = alert.get("confluence", {})
             pct = conf.get("percentage", 0)
             st.markdown(f"""
-<div style="background:#0F1923;border:1px solid #1A2A40;border-left:3px solid #4A9EFF;
-            border-radius:10px;padding:14px 18px;margin:6px 0;">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+<div style="background:linear-gradient(145deg,#0D0F1E,#0A0C18);border:1px solid #1C2038;
+            border-left:3px solid #4A9EFF;border-radius:12px;padding:14px 18px;margin:6px 0;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
         <strong style="font-size:0.92rem;color:#E8EDF5;">{alert['name']}</strong>
-        <span style="font-size:0.76rem;color:#4A5568;">Score {alert['score']}/100 &nbsp;|&nbsp; {conf.get('agree_buy',0)}/{conf.get('total',10)} indicadores ({pct}%)</span>
+        <span style="font-size:0.76rem;color:#A0B8C8;background:rgba(74,158,255,0.08);
+                     padding:2px 8px;border-radius:6px;">Score {alert['score']}/100 &nbsp;|&nbsp; {conf.get('agree_buy',0)}/{conf.get('total',10)} indic. ({pct}%)</span>
     </div>
-    <div style="font-size:0.78rem;color:#4A5568;margin-bottom:4px;">{alert['price']} &nbsp;&mdash;&nbsp; {alert['change_24h']} (24h)</div>
-    <div style="font-size:0.8rem;color:#7A9AB0;">{alert['explanation']}</div>
+    <div style="font-size:0.82rem;color:#B0C5D5;margin-bottom:5px;font-weight:500;">{alert['price']} &nbsp;&mdash;&nbsp; {alert['change_24h']} (24h)</div>
+    <div style="font-size:0.82rem;color:#A0B5C5;line-height:1.6;">{alert['explanation']}</div>
 </div>""", unsafe_allow_html=True)
     else:
         st.info("Nenhum ativo em observacao (Score 55-71) no momento.")
