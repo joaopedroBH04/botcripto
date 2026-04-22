@@ -30,7 +30,9 @@ from analysis import (
     compute_indicators, score_asset, detect_trend,
     classify_dip, generate_recommendation,
     compute_risk_metrics, compute_dca_plan, compute_correlation_matrix,
+    monte_carlo_simulation, detect_market_phase, generate_smart_narrative,
 )
+from patterns import detect_all_patterns
 
 # -------------------------------------------------------
 # Config da pagina
@@ -607,6 +609,7 @@ _nav_options = {
     "▸  05   Noticias":          "Noticias",
     "▸  06   Portfolio":         "Portfolio",
     "▸  07   Backtesting":       "Backtesting",
+    "▸  08   Padroes & IA":      "Padroes & IA",
 }
 _nav_descs = {
     "Visao Geral":       "Panorama de todos os ativos",
@@ -616,6 +619,7 @@ _nav_descs = {
     "Noticias":          "Sentimento do mercado",
     "Portfolio":         "Seus ativos e P&L",
     "Backtesting":       "Simule estrategias historicas",
+    "Padroes & IA":      "Padroes graficos + Monte Carlo + IA",
 }
 _selected_nav = st.sidebar.radio(
     "nav",
@@ -2448,6 +2452,302 @@ def render_backtesting():
 
 
 # -------------------------------------------------------
+# PAGINA: Padroes & IA
+# -------------------------------------------------------
+def _bold_to_html(text: str) -> str:
+    """Converte **texto** markdown para <strong> HTML."""
+    parts = text.split("**")
+    result = ""
+    for i, part in enumerate(parts):
+        if i % 2 == 1:
+            result += f'<strong style="color:#C0CDD8;">{part}</strong>'
+        else:
+            result += part
+    return result
+
+
+def render_patterns_ai():
+    st.markdown("""
+<div class="page-header">
+    <div class="page-header-bar"></div>
+    <div><h2>Padroes &amp; Inteligencia de Mercado</h2>
+    <p>Reconhecimento de padroes graficos &middot; Projecao Monte Carlo &middot; Narrativa inteligente</p></div>
+</div>""", unsafe_allow_html=True)
+
+    col1, col2 = st.columns(2)
+    with col1:
+        ai_type = st.selectbox("Tipo", ["Criptomoeda", "Acao/ETF"], key="ai_type")
+    with col2:
+        if ai_type == "Criptomoeda":
+            ai_asset = st.selectbox("Ativo", CRYPTO_IDS, format_func=lambda x: x.title(), key="ai_asset")
+            a_type   = "crypto"
+        else:
+            ai_asset = st.selectbox("Ativo", STOCK_TICKERS, key="ai_asset")
+            a_type   = "stock"
+
+    with st.spinner("Calculando padroes e gerando projecoes..."):
+        df, score_result, dip_info = get_history_and_analysis(ai_asset, a_type)
+
+    if df is None or df.empty:
+        st.error(f"Nao foi possivel carregar dados de {ai_asset}")
+        return
+
+    # ── Fase de Mercado ──────────────────────────────────────
+    st.markdown('<span class="section-label">Fase de Mercado</span>', unsafe_allow_html=True)
+    phase    = detect_market_phase(df)
+    ph_color = phase["color"]
+    ph_glow  = phase["glow"]
+    conf_bar = phase["confidence"]
+
+    st.markdown(f"""
+<div style="background:#0C1522;border:1px solid #1A2A40;border-radius:14px;
+            padding:22px 26px;position:relative;overflow:hidden;margin-bottom:16px;">
+    <div style="position:absolute;inset:0;
+                background:radial-gradient(ellipse at 0% 0%,{ph_glow} 0%,transparent 65%);
+                pointer-events:none;"></div>
+    <div style="display:flex;align-items:center;gap:18px;flex-wrap:wrap;">
+        <div style="font-size:2.6rem;line-height:1;flex-shrink:0;">{phase["emoji"]}</div>
+        <div style="flex:1;min-width:180px;">
+            <div style="font-size:1.25rem;font-weight:800;color:{ph_color};
+                        letter-spacing:-0.5px;margin-bottom:4px;">{phase["label"]}</div>
+            <div style="font-size:0.83rem;color:#506070;line-height:1.6;">{phase["description"]}</div>
+        </div>
+        <div style="text-align:right;flex-shrink:0;">
+            <div style="font-size:0.6rem;color:#2E4055;text-transform:uppercase;
+                        letter-spacing:1.5px;margin-bottom:4px;">Confianca</div>
+            <div style="font-size:2rem;font-weight:700;color:{ph_color};
+                        text-shadow:0 0 20px {ph_glow};">{conf_bar}%</div>
+        </div>
+    </div>
+    <div style="margin-top:16px;background:#0A1520;border-radius:4px;height:4px;overflow:hidden;">
+        <div style="background:{ph_color};width:{conf_bar}%;height:100%;border-radius:4px;
+                    box-shadow:0 0 10px {ph_glow};"></div>
+    </div>
+</div>""", unsafe_allow_html=True)
+
+    # ── Padroes Graficos ─────────────────────────────────────
+    st.markdown('<span class="section-label">Padroes Graficos Classicos Detectados</span>', unsafe_allow_html=True)
+    patterns = detect_all_patterns(df)
+
+    if not patterns:
+        st.markdown("""
+<div style="background:#0C1522;border:1px solid #1A2A40;border-radius:12px;
+            padding:22px 26px;text-align:center;">
+    <div style="font-size:0.88rem;color:#2E4055;margin-bottom:6px;">
+        Nenhum padrao classico identificado neste periodo.
+    </div>
+    <div style="font-size:0.74rem;color:#1A2A40;">
+        Padroes emergem em janelas de 30-90 barras. Tente outro ativo ou aguarde mais dados.
+    </div>
+</div>""", unsafe_allow_html=True)
+    else:
+        pcols = st.columns(min(len(patterns), 3))
+        for i, p in enumerate(patterns[:3]):
+            with pcols[i]:
+                if p["type"] == "bullish":
+                    pc, pg, pbg, plabel = "#00E5C3", "rgba(0,229,195,0.3)", "rgba(0,229,195,0.06)", "BULLISH"
+                elif p["type"] == "bearish":
+                    pc, pg, pbg, plabel = "#FF4757", "rgba(255,71,87,0.3)",  "rgba(255,71,87,0.06)",  "BEARISH"
+                else:
+                    pc, pg, pbg, plabel = "#FFB800", "rgba(255,184,0,0.3)",  "rgba(255,184,0,0.06)",  "NEUTRO"
+
+                levels_html = "".join(
+                    f'<div style="display:flex;justify-content:space-between;'
+                    f'padding:5px 0;border-bottom:1px solid #0A1520;">'
+                    f'<span style="font-size:0.7rem;color:#2E4055;">{k}</span>'
+                    f'<span style="font-size:0.72rem;font-weight:600;color:#8B9AB0;">${v:,.2f}</span>'
+                    f'</div>'
+                    for k, v in p.get("key_levels", {}).items()
+                )
+
+                st.markdown(f"""
+<div style="background:{pbg};border:1px solid {pg.replace('0.3','0.22')};border-radius:12px;
+            padding:18px 18px;position:relative;overflow:hidden;height:100%;">
+    <div style="position:absolute;top:0;left:0;right:0;height:2px;
+                background:{pc};border-radius:12px 12px 0 0;"></div>
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;">
+        <div style="font-size:0.88rem;font-weight:700;color:#C0CDD8;line-height:1.3;
+                    padding-right:8px;">{p["name"]}</div>
+        <span style="font-size:0.6rem;font-weight:700;color:{pc};
+                     border:1px solid {pg.replace('0.3','0.28')};border-radius:20px;
+                     padding:2px 8px;white-space:nowrap;flex-shrink:0;">{plabel}</span>
+    </div>
+    <div style="font-size:0.76rem;color:#3A5060;line-height:1.65;margin-bottom:14px;">
+        {p["description"]}
+    </div>
+    <div style="border-top:1px solid #0F1E2E;padding-top:10px;margin-bottom:12px;">
+        <div style="font-size:0.6rem;color:#2E4055;text-transform:uppercase;
+                    letter-spacing:1.2px;margin-bottom:6px;">Niveis-chave</div>
+        {levels_html}
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+        <span style="font-size:0.6rem;color:#2E4055;text-transform:uppercase;letter-spacing:1px;">
+            Confianca</span>
+        <span style="font-size:0.9rem;font-weight:700;color:{pc};">{p["confidence"]}%</span>
+    </div>
+    <div style="background:#0A1520;border-radius:3px;height:3px;overflow:hidden;">
+        <div style="background:{pc};width:{p["confidence"]}%;height:100%;border-radius:3px;
+                    box-shadow:0 0 8px {pg};"></div>
+    </div>
+</div>""", unsafe_allow_html=True)
+
+    st.markdown("<div style='height:8px'></div>", unsafe_allow_html=True)
+
+    # ── Narrativa Inteligente ────────────────────────────────
+    st.markdown('<span class="section-label">Narrativa Inteligente</span>', unsafe_allow_html=True)
+    if score_result and dip_info:
+        narrative  = generate_smart_narrative(df, score_result, dip_info, ai_asset.title())
+        paragraphs = narrative.split("\n\n")
+
+        paras_html = "".join(
+            f'<div style="margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid #0F1E2E;">'
+            f'{_bold_to_html(p)}</div>'
+            for p in paragraphs
+        )
+
+        st.markdown(f"""
+<div style="background:linear-gradient(140deg,#0C1520 0%,#101C2A 100%);
+            border:1px solid #1A2A40;border-top:2px solid #00E5C3;
+            border-radius:12px;padding:22px 26px;font-size:0.85rem;
+            color:#506070;line-height:1.8;">
+    {paras_html}
+</div>""", unsafe_allow_html=True)
+
+    # ── Monte Carlo ──────────────────────────────────────────
+    st.markdown('<span class="section-label">Projecao Monte Carlo — Proximos 30 dias</span>', unsafe_allow_html=True)
+    mc = monte_carlo_simulation(df, days=30, simulations=600)
+
+    if not mc:
+        st.warning("Dados insuficientes para simulacao Monte Carlo.")
+        return
+
+    days_arr = list(range(1, mc["days"] + 1))
+    last_p   = mc["last_price"]
+
+    fig_mc = go.Figure()
+
+    # Trajetorias de amostra (faded)
+    for path in mc["sample_paths"][:30]:
+        fig_mc.add_trace(go.Scatter(
+            x=days_arr, y=path, mode="lines",
+            line=dict(color="rgba(74,158,255,0.05)", width=1),
+            showlegend=False, hoverinfo="skip",
+        ))
+
+    # Banda 90% (5-95)
+    fig_mc.add_trace(go.Scatter(
+        x=days_arr + days_arr[::-1],
+        y=mc["p95"] + mc["p5"][::-1],
+        fill="toself", fillcolor="rgba(74,158,255,0.06)",
+        line=dict(color="rgba(0,0,0,0)"),
+        name="90% Intervalo", showlegend=True,
+    ))
+
+    # Banda 50% (25-75)
+    fig_mc.add_trace(go.Scatter(
+        x=days_arr + days_arr[::-1],
+        y=mc["p75"] + mc["p25"][::-1],
+        fill="toself", fillcolor="rgba(74,158,255,0.13)",
+        line=dict(color="rgba(0,0,0,0)"),
+        name="50% Intervalo", showlegend=True,
+    ))
+
+    # Mediana
+    fig_mc.add_trace(go.Scatter(
+        x=days_arr, y=mc["p50"], mode="lines",
+        line=dict(color="#00E5C3", width=2.5),
+        name=f"Mediana ${mc['median_target']:.2f}",
+    ))
+
+    # Cenario otimista
+    fig_mc.add_trace(go.Scatter(
+        x=days_arr, y=mc["p75"], mode="lines",
+        line=dict(color="#4A9EFF", width=1.5, dash="dot"),
+        name=f"Bull ${mc['bull_target']:.2f}",
+    ))
+
+    # Cenario pessimista
+    fig_mc.add_trace(go.Scatter(
+        x=days_arr, y=mc["p25"], mode="lines",
+        line=dict(color="#FF4757", width=1.5, dash="dot"),
+        name=f"Bear ${mc['bear_target']:.2f}",
+    ))
+
+    fig_mc.add_hline(
+        y=last_p, line_dash="dash",
+        line_color="rgba(255,255,255,0.18)",
+        annotation_text=f"Hoje ${last_p:.2f}",
+        annotation_position="left",
+        annotation_font_color="#2E4055",
+    )
+
+    fig_mc.update_layout(
+        height=420,
+        template="plotly_dark",
+        paper_bgcolor="#0C1522",
+        plot_bgcolor="#0C1522",
+        legend=dict(
+            orientation="h", yanchor="bottom", y=1.02,
+            xanchor="right", x=1, font=dict(size=10),
+        ),
+        margin=dict(l=50, r=20, t=40, b=40),
+        xaxis_title="Dias a partir de hoje",
+        yaxis_title="Preco (USD)",
+        xaxis=dict(gridcolor="#0F1E2E", zeroline=False),
+        yaxis=dict(gridcolor="#0F1E2E", zeroline=False),
+    )
+    st.plotly_chart(fig_mc, use_container_width=True)
+
+    # Metricas da simulacao
+    prob_up    = mc["prob_up"]
+    prob_color = "#00E5C3" if prob_up >= 55 else ("#FFB800" if prob_up >= 45 else "#FF4757")
+    prob_glow  = ("rgba(0,229,195,0.3)" if prob_up >= 55
+                  else ("rgba(255,184,0,0.3)" if prob_up >= 45 else "rgba(255,71,87,0.3)"))
+
+    m1, m2, m3, m4 = st.columns(4)
+    with m1:
+        st.markdown(render_glass_metric(
+            "Probabilidade de Alta",
+            f"{prob_up:.0f}<span style='font-size:1rem;font-weight:400;color:#2E4055;'>%</span>",
+            "Em 30 dias vs. preco atual",
+            prob_color, prob_glow,
+        ), unsafe_allow_html=True)
+    with m2:
+        med_chg = (mc["median_target"] / last_p - 1) * 100
+        st.markdown(render_glass_metric(
+            "Mediana (30d)",
+            f"<span style='font-size:1.4rem;'>${mc['median_target']:.2f}</span>",
+            f"{med_chg:+.1f}% vs. hoje",
+            "#00E5C3", "rgba(0,229,195,0.2)",
+        ), unsafe_allow_html=True)
+    with m3:
+        bull_chg = (mc["bull_target"] / last_p - 1) * 100
+        st.markdown(render_glass_metric(
+            "Cenario Bull (75%)",
+            f"<span style='font-size:1.4rem;'>${mc['bull_target']:.2f}</span>",
+            f"{bull_chg:+.1f}% potencial",
+            "#4A9EFF", "rgba(74,158,255,0.2)",
+        ), unsafe_allow_html=True)
+    with m4:
+        bear_chg = (mc["bear_target"] / last_p - 1) * 100
+        st.markdown(render_glass_metric(
+            "Cenario Bear (25%)",
+            f"<span style='font-size:1.4rem;'>${mc['bear_target']:.2f}</span>",
+            f"{bear_chg:+.1f}% risco",
+            "#FF4757", "rgba(255,71,87,0.2)",
+        ), unsafe_allow_html=True)
+
+    st.markdown("""
+<div style="background:#090F1C;border:1px solid #0F1E2E;border-radius:10px;
+            padding:14px 20px;margin-top:10px;font-size:0.76rem;color:#2A3A50;line-height:1.7;">
+    <strong style="color:#1A2A40;">Nota metodologica:</strong>
+    600 trajetorias simuladas com Geometric Brownian Motion calibrado nos retornos logaritmicos historicos
+    (media e volatilidade). Os percentis mostram a distribuicao estatistica de resultados possiveis —
+    nao sao previsoes. Volatilidade futura pode diferir do historico.
+</div>""", unsafe_allow_html=True)
+
+
+# -------------------------------------------------------
 # Roteamento
 # -------------------------------------------------------
 if page == "Visao Geral":
@@ -2464,3 +2764,5 @@ elif page == "Portfolio":
     render_portfolio()
 elif page == "Backtesting":
     render_backtesting()
+elif page == "Padroes & IA":
+    render_patterns_ai()
