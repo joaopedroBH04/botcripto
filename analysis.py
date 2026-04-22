@@ -1190,3 +1190,306 @@ def generate_recommendation(score_result: dict, dip_info: dict, asset_name: str)
             )
 
     return "\n\n".join(lines)
+
+
+# =============================================================
+# PROJECAO MONTE CARLO
+# =============================================================
+
+def monte_carlo_simulation(
+    df: pd.DataFrame,
+    days: int = 30,
+    simulations: int = 600,
+) -> dict:
+    """
+    Simula N trajetórias de preco usando Geometric Brownian Motion
+    calibrado com os retornos logaritmicos historicos do ativo.
+    Retorna percentis, probabilidade de alta e caminhos de amostra.
+    """
+    if df.empty or len(df) < 30:
+        return {}
+
+    close       = df["Close"].dropna()
+    log_returns = np.log(close / close.shift(1)).dropna()
+
+    mu    = float(log_returns.mean())
+    sigma = float(log_returns.std())
+    last  = float(close.iloc[-1])
+
+    rng            = np.random.default_rng()
+    random_shocks  = rng.normal(mu, sigma, (simulations, days))
+    paths          = last * np.exp(np.cumsum(random_shocks, axis=1))
+
+    p5  = np.percentile(paths, 5,  axis=0)
+    p25 = np.percentile(paths, 25, axis=0)
+    p50 = np.percentile(paths, 50, axis=0)
+    p75 = np.percentile(paths, 75, axis=0)
+    p95 = np.percentile(paths, 95, axis=0)
+
+    final        = paths[:, -1]
+    prob_up      = float((final > last).mean() * 100)
+
+    return {
+        "sample_paths":   paths[:40].tolist(),
+        "p5":             p5.tolist(),
+        "p25":            p25.tolist(),
+        "p50":            p50.tolist(),
+        "p75":            p75.tolist(),
+        "p95":            p95.tolist(),
+        "last_price":     last,
+        "prob_up":        prob_up,
+        "median_target":  float(p50[-1]),
+        "bull_target":    float(p75[-1]),
+        "bear_target":    float(p25[-1]),
+        "days":           days,
+    }
+
+
+# =============================================================
+# FASE DE MERCADO (Wyckoff-inspired)
+# =============================================================
+
+_PHASE_PALETTE = {
+    "#00E5C3": "rgba(0,229,195,0.35)",
+    "#FF4757": "rgba(255,71,87,0.35)",
+    "#4A9EFF": "rgba(74,158,255,0.35)",
+    "#FFB800": "rgba(255,184,0,0.35)",
+    "#8B9AB0": "rgba(139,154,176,0.20)",
+}
+
+
+def detect_market_phase(df: pd.DataFrame) -> dict:
+    """
+    Classifica a fase atual do mercado em:
+    Alta · Baixa · Acumulacao · Distribuicao · Inicio de Alta · Indefinido.
+    Combina SMA slopes, ADX, OBV e contracao de ATR (Wyckoff-inspired).
+    """
+    _unknown = {
+        "phase": "indefinido", "label": "Indefinido",
+        "description": "Mercado sem direcao clara. Aguarde sinais mais definidos.",
+        "confidence": 30, "color": "#8B9AB0",
+        "glow": _PHASE_PALETTE["#8B9AB0"], "emoji": "↔",
+    }
+
+    if df.empty or len(df) < 50:
+        return _unknown
+
+    close   = df["Close"]
+    sma_20  = df.get("sma_20")
+    sma_50  = df.get("sma_50")
+    obv     = df.get("obv")
+    obv_sma = df.get("obv_sma_20")
+    adx     = df.get("adx")
+    atr     = df.get("atr")
+
+    if sma_20 is None or sma_50 is None:
+        return _unknown
+
+    cur  = float(close.iloc[-1])
+    s20  = float(sma_20.iloc[-1]) if not pd.isna(sma_20.iloc[-1]) else cur
+    s50  = float(sma_50.iloc[-1]) if not pd.isna(sma_50.iloc[-1]) else cur
+    s20_slope = _calc_slope(sma_20, 10)
+    s50_slope = _calc_slope(sma_50, 20)
+    adx_val   = float(adx.iloc[-1]) if adx is not None and not pd.isna(adx.iloc[-1]) else 20.0
+
+    obv_rising = False
+    if obv is not None and obv_sma is not None:
+        ov, oa = obv.iloc[-1], obv_sma.iloc[-1]
+        if not pd.isna(ov) and not pd.isna(oa):
+            obv_rising = float(ov) > float(oa)
+
+    atr_contracting = False
+    if atr is not None:
+        atr_clean = atr.dropna()
+        if len(atr_clean) > 20:
+            atr_contracting = float(atr_clean.iloc[-5:].mean()) < float(atr_clean.iloc[-20:-5].mean()) * 0.85
+
+    def _make(phase, label, desc, color, emoji, conf):
+        return {
+            "phase": phase, "label": label, "description": desc,
+            "confidence": conf, "color": color,
+            "glow": _PHASE_PALETTE.get(color, "rgba(0,229,195,0.35)"),
+            "emoji": emoji,
+        }
+
+    if cur > s20 and cur > s50 and s20_slope > 0.001 and s50_slope > 0.001:
+        return _make("alta", "Tendencia de Alta",
+                     "Preco acima das medias de 20 e 50 dias, ambas subindo. Momento comprador confirmado.",
+                     "#00E5C3", "▲", min(95, int(adx_val * 2)))
+
+    if cur < s20 and cur < s50 and s20_slope < -0.001 and s50_slope < -0.001:
+        return _make("baixa", "Tendencia de Baixa",
+                     "Preco abaixo das medias, ambas caindo. Evite comprar ate sinais de reversao.",
+                     "#FF4757", "▼", min(95, int(adx_val * 2)))
+
+    if adx_val < 22 and atr_contracting and obv_rising:
+        return _make("acumulacao", "Acumulacao",
+                     "Movimento lateral com OBV subindo e volatilidade contraindo. Smart money comprando discretamente.",
+                     "#4A9EFF", "○", 68)
+
+    if adx_val < 22 and not obv_rising and s20_slope < 0:
+        return _make("distribuicao", "Distribuicao",
+                     "Lateral apos alta com OBV caindo. Possivel saida de grandes players. Cautela.",
+                     "#FFB800", "!", 62)
+
+    if s20_slope > 0.0005 and obv_rising and cur > s50:
+        return _make("inicio_alta", "Inicio de Alta",
+                     "Medias comecando a subir com OBV em acumulacao. Possivel fim da fase lateral.",
+                     "#00E5C3", "↑", 65)
+
+    return _unknown
+
+
+# =============================================================
+# NARRADOR INTELIGENTE
+# =============================================================
+
+def generate_smart_narrative(
+    df: pd.DataFrame,
+    score_result: dict,
+    dip_info: dict,
+    asset_name: str,
+) -> str:
+    """
+    Gera narrativa em linguagem natural sobre o ativo,
+    explicada de forma acessivel para investidores iniciantes.
+    Combina todos os indicadores em um texto coerente e acionavel.
+    """
+    if not score_result or df.empty:
+        return "Dados insuficientes para gerar narrativa."
+
+    score      = score_result.get("score", 0)
+    signals    = score_result.get("signals", {})
+    trend      = score_result.get("trend", "indefinido")
+    confluence = score_result.get("confluence", {})
+    agree      = confluence.get("agree_buy", 0)
+    total      = confluence.get("total", 10)
+    divergences = score_result.get("divergences", {})
+    dip_type   = (dip_info or {}).get("type", "")
+    cur        = float(df["Close"].iloc[-1])
+
+    trend_desc = {
+        "alta":          "tendencia de alta confirmada",
+        "alta_fraca":    "tendencia de alta ainda fraca",
+        "baixa":         "tendencia de baixa ativa",
+        "baixa_fraca":   "tendencia de baixa moderada",
+        "lateral":       "movimento lateral sem direcao clara",
+        "reversao_alta": "possivel reversao para alta em andamento",
+        "reversao_baixa":"possivel reversao para baixa em andamento",
+        "indefinido":    "direcao indefinida",
+    }.get(trend, trend)
+
+    paras = []
+
+    # ── Panorama geral ──
+    rsi_val = signals.get("RSI", {}).get("value", 50)
+    if rsi_val < 30:
+        rsi_text = (f"RSI em {rsi_val:.0f} — sobrevendido. Houve exagero nas vendas; "
+                    "historicamente este nivel precede recuperacoes.")
+    elif rsi_val > 70:
+        rsi_text = (f"RSI em {rsi_val:.0f} — sobrecomprado. Muita pressao compradora "
+                    "recente, risco de correcao elevado.")
+    elif rsi_val < 45:
+        rsi_text = (f"RSI em {rsi_val:.0f} — territorio favoravel, com espaco para subir "
+                    "sem estar sobrecomprado.")
+    else:
+        rsi_text = f"RSI em {rsi_val:.0f} — zona neutra, sem sinais extremos."
+
+    paras.append(
+        f"**Panorama:** {asset_name} esta em **{trend_desc}**. "
+        f"Score geral: **{score}/100** com {agree}/{total} indicadores apontando para compra. "
+        f"{rsi_text}"
+    )
+
+    # ── Volume e smart money ──
+    vol_signal = signals.get("Volume/OBV", {}).get("signal", "").lower()
+    if "acumulacao" in vol_signal:
+        paras.append(
+            "**Volume:** Padrao de acumulacao detectado — grandes players podem estar comprando "
+            "discretamente. Sinal institucional positivo."
+        )
+    elif "distribuicao" in vol_signal:
+        paras.append(
+            "**Volume:** Padrao de distribuicao — possivel saida de capital institucional. Cautela."
+        )
+    elif "queda" in vol_signal and ("baixo" in vol_signal or "fraca" in vol_signal or "perdendo" in vol_signal):
+        paras.append(
+            "**Volume:** Queda com volume abaixo da media — vendedores perdendo folego. Sinal positivo."
+        )
+
+    # ── Bollinger ──
+    bb_info = signals.get("Bollinger", {})
+    bb_pts  = bb_info.get("points", 0)
+    bb_max  = bb_info.get("max", 8)
+    bb_pos  = bb_info.get("value", 50)
+    if bb_max > 0:
+        bb_ratio = bb_pts / bb_max
+        if bb_ratio >= 0.75:
+            paras.append(
+                f"**Volatilidade:** Preco proximo a banda inferior de Bollinger "
+                f"({bb_pos:.0f}% da banda) — zona historica de suporte e possivel rebote."
+            )
+        elif bb_ratio <= 0.2:
+            paras.append(
+                f"**Volatilidade:** Preco na banda superior ({bb_pos:.0f}%) — "
+                "regiao sobrecomprada a curto prazo; risco de correcao tecnica."
+            )
+
+    # ── Divergencias ──
+    rsi_div  = divergences.get("rsi",  {}).get("type", "none")
+    macd_div = divergences.get("macd", {}).get("type", "none")
+    if rsi_div == "bullish" or macd_div == "bullish":
+        paras.append(
+            "**Sinal Especial — Divergencia Bullish:** O preco fez uma nova minima, "
+            "mas os osciladores internos fizeram uma minima mais alta. Isso significa que a "
+            "pressao vendedora esta se esgotando. Historicamente, este padrao precede "
+            "reversoes para alta com alta probabilidade."
+        )
+    elif rsi_div == "bearish" or macd_div == "bearish":
+        paras.append(
+            "**Atencao — Divergencia Bearish:** O preco subiu mas os indicadores internos "
+            "enfraqueceram. A alta pode estar perdendo forca — considere reduzir exposicao "
+            "ou aguardar antes de novas compras."
+        )
+
+    # ── Contexto da queda ──
+    dip_texts = {
+        "ruido":          "A oscilacao recente e ruido normal — flutuacao dentro do esperado para o ativo.",
+        "correcao":       "Correcao tecnica saudavel dentro de uma tendencia maior. Correcoes sao oportunidades.",
+        "estavel":        "Preco estavel, sem quedas expressivas no periodo analisado.",
+        "queda_forte":    "Queda expressiva recente. Considere comprar apenas em suportes Fibonacci confirmados.",
+        "queda_moderada": "Queda moderada em andamento. Aguarde estabilizacao antes de adicionar posicao.",
+        "alerta":         "Situacao de alerta: queda com medias enfraquecendo. Monitore de perto.",
+    }
+    if dip_type in dip_texts:
+        paras.append(f"**Contexto de Mercado:** {dip_texts[dip_type]}")
+
+    # ── Conclusao acionavel ──
+    fib_levels = signals.get("Fibonacci", {}).get("levels", {})
+    s61 = fib_levels.get("61.8%", 0)
+
+    if score >= 72:
+        stop_ref = (f" Stop-loss sugerido abaixo de ${s61:.2f} (Fibonacci 61.8%)."
+                    if s61 > 0 and s61 < cur else "")
+        paras.append(
+            f"**Conclusao:** Setup de alta qualidade. Multiplos indicadores convergindo "
+            f"para oportunidade.{stop_ref} Considere entrada em parcelas (DCA) para "
+            "reduzir o risco de timing."
+        )
+    elif score >= 55:
+        paras.append(
+            "**Conclusao:** Sinais moderadamente favoraveis. Uma posicao inicial "
+            "pequena e razoavel, mas aguarde mais confirmacao para aumentar o tamanho."
+        )
+    elif score >= 30:
+        paras.append(
+            "**Conclusao:** Mercado sem direcao clara. Melhor aguardar. "
+            "Se ja investido, mantenha posicoes mas nao adicione agora."
+        )
+    else:
+        paras.append(
+            "**Conclusao:** Sinais negativos dominantes. Nao compre agora. "
+            "Se tem posicao, avalie protecao com stop-loss. Aguarde reversao tecnica confirmada."
+        )
+
+    return "\n\n".join(paras)
