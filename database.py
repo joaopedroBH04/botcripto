@@ -19,7 +19,7 @@
 import os
 import json
 import threading
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
 from typing import Optional
 
 import pandas as pd
@@ -384,7 +384,7 @@ def load_alert_history(days: int = 30) -> pd.DataFrame:
     """
     try:
         with get_session() as session:
-            cutoff = date.today() - pd.Timedelta(days=days)
+            cutoff = date.today() - timedelta(days=days)
             rows = (
                 session.query(AlertLog)
                 .filter(AlertLog.snapshot_date >= cutoff)

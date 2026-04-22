@@ -162,7 +162,7 @@ footer { visibility: hidden; }
     background-clip: text;
 }
 .confluence-box p {
-    color: #4A5568;
+    color: #7A8B9C;
     font-size: 0.78rem;
     margin: 4px 0 0 0;
     text-transform: uppercase;
@@ -211,7 +211,7 @@ footer { visibility: hidden; }
     font-size: 0.7rem !important;
     text-transform: uppercase;
     letter-spacing: 1px;
-    color: #4A5568 !important;
+    color: #7A8B9C !important;
 }
 [data-testid="stMetricValue"] { color: #E8EDF5 !important; font-weight: 700 !important; }
 
@@ -349,7 +349,7 @@ hr { border-color: #1A2A40 !important; margin: 20px 0 !important; }
     font-size: 0.68rem;
     text-transform: uppercase;
     letter-spacing: 2px;
-    color: #2E4055;
+    color: #627A8A;
     margin: 28px 0 12px 0;
     display: block;
     padding-bottom: 8px;
@@ -382,7 +382,7 @@ hr { border-color: #1A2A40 !important; margin: 20px 0 !important; }
 }
 .page-header p {
     font-size: 0.8rem;
-    color: #2E4055;
+    color: #627A8A;
     margin: 0;
     letter-spacing: 0.3px;
 }
@@ -497,7 +497,7 @@ hr { border-color: #1A2A40 !important; margin: 20px 0 !important; }
     font-size: 0.64rem;
     text-transform: uppercase;
     letter-spacing: 2px;
-    color: #2E4055;
+    color: #627A8A;
     margin-bottom: 10px;
     display: block;
 }
@@ -511,7 +511,7 @@ hr { border-color: #1A2A40 !important; margin: 20px 0 !important; }
 }
 .g-metric .gm-sub {
     font-size: 0.75rem;
-    color: #3A5060;
+    color: #7A8B9C;
 }
 .g-metric .gm-accent-bar {
     position: absolute;
@@ -580,24 +580,24 @@ st.sidebar.markdown(f"""
                 background:linear-gradient(135deg,#00E5C3 0%,#4A9EFF 100%);
                 -webkit-background-clip:text; -webkit-text-fill-color:transparent;
                 background-clip:text; letter-spacing:-0.8px; line-height:1;">BotCripto</div>
-    <div style="font-size:0.6rem; color:#2E4055; text-transform:uppercase;
+    <div style="font-size:0.6rem; color:#627A8A; text-transform:uppercase;
                 letter-spacing:2.2px; margin-top:5px; margin-bottom:10px;">Monitor Financeiro v2</div>
     <div style="display:flex;align-items:center;gap:7px;margin-bottom:4px;">
         <div style="width:6px;height:6px;background:#00E5C3;border-radius:50%;
                     flex-shrink:0;
                     animation:live-blink 1.8s ease-in-out infinite;
                     box-shadow:0 0 6px rgba(0,229,195,0.8);"></div>
-        <span style="font-size:0.62rem;color:#2E4055;text-transform:uppercase;
+        <span style="font-size:0.62rem;color:#627A8A;text-transform:uppercase;
                      letter-spacing:1.5px;">Cache 10 min &bull; Cripto</span>
     </div>
-    <div style="font-size:0.6rem;color:#1A2A40;padding-left:13px;">
+    <div style="font-size:0.6rem;color:#4A5568;padding-left:13px;">
         Pagina carregada {_age_label} &nbsp;&bull;&nbsp; {_now.strftime('%H:%M')}
     </div>
 </div>
 """, unsafe_allow_html=True)
 
 st.sidebar.markdown("""
-<div style="font-size:0.62rem;color:#2A3A50;text-transform:uppercase;
+<div style="font-size:0.62rem;color:#506070;text-transform:uppercase;
             letter-spacing:2px;margin-bottom:6px;padding:0 4px;">Menu</div>
 """, unsafe_allow_html=True)
 
@@ -630,7 +630,7 @@ page = _nav_options[_selected_nav]
 
 # Descricao da pagina ativa
 st.sidebar.markdown(
-    f'<div style="font-size:0.75rem;color:#2E4055;padding:4px 14px 12px 14px;'
+    f'<div style="font-size:0.75rem;color:#627A8A;padding:4px 14px 12px 14px;'
     f'border-bottom:1px solid #0F1E2E;">{_nav_descs[page]}</div>',
     unsafe_allow_html=True,
 )
@@ -644,14 +644,14 @@ if st.sidebar.button("Atualizar Dados", use_container_width=True):
 st.sidebar.markdown("""
 <div style="margin-top:24px;padding:14px;background:#090F1C;border-radius:8px;
             border:1px solid #0F1E2E;">
-    <div style="font-size:0.65rem;color:#2E4055;text-transform:uppercase;
+    <div style="font-size:0.65rem;color:#627A8A;text-transform:uppercase;
                 letter-spacing:1.2px;margin-bottom:6px;">Aviso Legal</div>
-    <div style="font-size:0.72rem;color:#2A3A50;line-height:1.6;">
+    <div style="font-size:0.72rem;color:#7A8B9C;line-height:1.6;">
         Este sistema e apenas informativo e nao constitui recomendacao de investimento.
         Sempre faca sua propria analise antes de operar.
     </div>
 </div>
-<div style="margin-top:14px;font-size:0.62rem;color:#1A2A40;text-align:center;
+<div style="margin-top:14px;font-size:0.62rem;color:#3D5060;text-align:center;
             letter-spacing:0.5px;">BotCripto v2 &nbsp;·&nbsp; open source</div>
 """, unsafe_allow_html=True)
 
@@ -1059,7 +1059,7 @@ def render_score_ring_html(score: int) -> str:
                     align-items:center;justify-content:center;gap:2px;">
             <div style="font-size:2.5rem;font-weight:800;color:{color};line-height:1;
                         text-shadow:0 0 30px {glow};letter-spacing:-2px;">{score}</div>
-            <div style="font-size:0.56rem;color:#2E4055;text-transform:uppercase;
+            <div style="font-size:0.56rem;color:#627A8A;text-transform:uppercase;
                         letter-spacing:2px;">/ 100</div>
         </div>
     </div>
@@ -1084,7 +1084,7 @@ def render_ticker_html(scores: list) -> str:
         symbol = "▲" if is_pos else "▼"
         items += f"""<span style="display:inline-flex;align-items:center;gap:8px;
                                    margin:0 22px;white-space:nowrap;">
-            <span style="font-size:0.72rem;color:#2E4055;font-family:'Courier New',monospace;
+            <span style="font-size:0.72rem;color:#627A8A;font-family:'Courier New',monospace;
                          letter-spacing:0.5px;">{name}</span>
             <span style="font-size:0.75rem;font-weight:700;color:{color};
                          font-family:'Courier New',monospace;">{symbol} {change}</span>
@@ -1118,7 +1118,7 @@ def render_heatmap_html(scores_df) -> str:
         <div style="font-size:0.78rem;font-weight:600;color:#C0CDD8;
                     line-height:1.3;margin-bottom:3px;">{name}</div>
         <div style="display:flex;justify-content:space-between;align-items:center;">
-            <span style="font-size:0.68rem;color:#2E4055;">{row['Tipo']} &middot; {row['Preco']}</span>
+            <span style="font-size:0.68rem;color:#627A8A;">{row['Tipo']} &middot; {row['Preco']}</span>
             <span style="font-size:0.7rem;font-weight:700;color:{ch_color};
                          background:{ch_bg};padding:1px 6px;border-radius:5px;">
                 {ch_sym} {change}</span>
@@ -1131,7 +1131,7 @@ def render_heatmap_html(scores_df) -> str:
     <div style="display:flex;justify-content:space-between;align-items:baseline;">
         <span style="font-size:1.4rem;font-weight:800;color:{color};
                      text-shadow:0 0 16px {glow};letter-spacing:-1px;">{sv}</span>
-        <span style="font-size:0.64rem;color:#2E4055;">{conf} indic.</span>
+        <span style="font-size:0.64rem;color:#627A8A;">{conf} indic.</span>
     </div>
 </div>"""
     return f'<div class="heat-grid">{tiles}</div>'
@@ -1189,13 +1189,13 @@ def render_overview():
     with c1:
         st.markdown(render_glass_metric(
             "Fear &amp; Greed Index",
-            f"{fg_val} <span style='font-size:1rem;font-weight:400;color:#2E4055;'>{fg_class}</span>",
+            f"{fg_val} <span style='font-size:1rem;font-weight:400;color:#627A8A;'>{fg_class}</span>",
             fg_sub, fg_color, fg_glow
         ), unsafe_allow_html=True)
     with c2:
         st.markdown(render_glass_metric(
             "Dominancia BTC",
-            f"{btc_dom:.1f}<span style='font-size:1rem;font-weight:400;color:#2E4055;'>%</span>",
+            f"{btc_dom:.1f}<span style='font-size:1rem;font-weight:400;color:#627A8A;'>%</span>",
             "Dominancia do Bitcoin no mercado cripto",
             btc_color, btc_glow
         ), unsafe_allow_html=True)
@@ -1364,21 +1364,21 @@ def render_overview():
     <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;">
         <div>
             <div style="font-weight:700;font-size:0.88rem;color:#E8EDF5;margin-bottom:2px;">{row['Ativo']}</div>
-            <div style="font-size:0.72rem;color:#2E4055;">{row['Preco']} &nbsp;·&nbsp; {row['24h']} (24h)</div>
+            <div style="font-size:0.72rem;color:#627A8A;">{row['Preco']} &nbsp;·&nbsp; {row['24h']} (24h)</div>
         </div>
         {score_badge(score_val)}
     </div>
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
         <div>
-            <div style="font-size:0.68rem;color:#2E4055;text-transform:uppercase;letter-spacing:1px;">Score</div>
-            <div style="font-size:1.6rem;font-weight:700;color:#00E5C3;line-height:1;">{score_val}<span style="font-size:0.8rem;color:#2E4055;font-weight:400;">/100</span></div>
+            <div style="font-size:0.68rem;color:#627A8A;text-transform:uppercase;letter-spacing:1px;">Score</div>
+            <div style="font-size:1.6rem;font-weight:700;color:#00E5C3;line-height:1;">{score_val}<span style="font-size:0.8rem;color:#627A8A;font-weight:400;">/100</span></div>
         </div>
         <div style="text-align:right;">
-            <div style="font-size:0.68rem;color:#2E4055;text-transform:uppercase;letter-spacing:1px;">Confluencia</div>
-            <div style="font-size:1.2rem;font-weight:700;color:#4A9EFF;">{conf.get('agree_buy',0)}<span style="font-size:0.8rem;color:#2E4055;font-weight:400;">/{conf.get('total',10)}</span></div>
+            <div style="font-size:0.68rem;color:#627A8A;text-transform:uppercase;letter-spacing:1px;">Confluencia</div>
+            <div style="font-size:1.2rem;font-weight:700;color:#4A9EFF;">{conf.get('agree_buy',0)}<span style="font-size:0.8rem;color:#627A8A;font-weight:400;">/{conf.get('total',10)}</span></div>
         </div>
     </div>
-    <div style="font-size:0.82rem;color:#506070;line-height:1.65;border-top:1px solid #1A2A40;padding-top:10px;">{rec}</div>
+    <div style="font-size:0.82rem;color:#8B9AB0;line-height:1.65;border-top:1px solid #1A2A40;padding-top:10px;">{rec}</div>
 </div>
 """, unsafe_allow_html=True)
 
@@ -1482,17 +1482,17 @@ def render_deep_dive():
 <div class="g-metric" style="--gm-color:{conf_color};--gm-glow:{conf_glow};margin-bottom:10px;">
     <span class="gm-label">Confluencia</span>
     <div class="gm-value" style="font-size:2.6rem;letter-spacing:-2px;">
-        {agree}<span style="font-size:1rem;font-weight:400;color:#2E4055;">/{total}</span>
+        {agree}<span style="font-size:1rem;font-weight:400;color:#627A8A;">/{total}</span>
     </div>
     <div class="gm-sub">indicadores concordam &middot; {pct}%</div>
     <div class="gm-accent-bar"></div>
 </div>
 <div style="background:#0C1522;border:1px solid #1A2A40;border-radius:10px;
-            padding:12px 16px;font-size:0.82rem;color:#506070;line-height:1.8;">
-    <div><span style="color:#2E4055;font-size:0.68rem;text-transform:uppercase;
+            padding:12px 16px;font-size:0.82rem;color:#8B9AB0;line-height:1.8;">
+    <div><span style="color:#627A8A;font-size:0.68rem;text-transform:uppercase;
                        letter-spacing:1px;">Tendencia</span><br>
          <span style="color:#C0CDD8;font-weight:600;">{trend_txt}</span></div>
-    <div style="margin-top:6px;"><span style="color:#2E4055;font-size:0.68rem;text-transform:uppercase;
+    <div style="margin-top:6px;"><span style="color:#627A8A;font-size:0.68rem;text-transform:uppercase;
                        letter-spacing:1px;">Classificacao</span><br>
          <span style="color:#C0CDD8;font-weight:600;">{label_txt}</span></div>
 </div>
@@ -1561,7 +1561,7 @@ def render_deep_dive():
             padding:14px 16px;margin:4px 0;height:100%;">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:9px;">
         <span style="font-size:0.78rem;font-weight:600;color:#C0CDD8;display:flex;align-items:center;gap:5px;">{dot_html}{name}</span>
-        <span style="font-size:0.72rem;color:#2E4055;font-weight:600;
+        <span style="font-size:0.72rem;color:#627A8A;font-weight:600;
                      background:#0A1520;padding:2px 7px;border-radius:10px;
                      border:1px solid #1A2A40;">{info['points']}/{info['max']}</span>
     </div>
@@ -1569,10 +1569,10 @@ def render_deep_dive():
         <div style="background:{bar_color};width:{pct*100:.0f}%;height:100%;border-radius:3px;
                     box-shadow:0 0 8px {bar_color}44;"></div>
     </div>
-    <div style="font-size:0.7rem;color:#2E4055;margin-bottom:3px;">
-        Valor: <span style="color:#506070;">{value_text}</span>
+    <div style="font-size:0.7rem;color:#627A8A;margin-bottom:3px;">
+        Valor: <span style="color:#8B9AB0;">{value_text}</span>
     </div>
-    <div style="font-size:0.72rem;color:#3A5060;line-height:1.5;">{signal_text}</div>
+    <div style="font-size:0.72rem;color:#7A8B9C;line-height:1.5;">{signal_text}</div>
 </div>
 """, unsafe_allow_html=True)
 
@@ -1697,16 +1697,16 @@ def render_risk():
                 st.markdown(f"""
 <div style="background:#090F1C;border:1px solid #0F1E2E;border-radius:10px;
             padding:16px 20px;margin-top:12px;">
-    <div style="font-size:0.68rem;color:#2E4055;text-transform:uppercase;
+    <div style="font-size:0.68rem;color:#627A8A;text-transform:uppercase;
                 letter-spacing:1.5px;margin-bottom:10px;">Como interpretar</div>
-    <div style="font-size:0.82rem;color:#3A5060;line-height:1.8;">
+    <div style="font-size:0.82rem;color:#7A8B9C;line-height:1.8;">
         &mdash; O ATR de <span style="color:#8B9AB0;">${risk['atr']:.2f}</span> ({risk['atr_percentual']}%) indica a volatilidade diaria media<br>
         &mdash; O stop-loss em <span style="color:#FF4757;">${risk['stop_loss']:.2f}</span> esta a 2&times; ATR do preco atual<br>
         &mdash; Se o preco cair ate o stop-loss, voce perde no maximo <span style="color:#FF4757;">${risk['risco_maximo']:.2f}</span> ({risk_pct}% do portfolio)<br>
         &mdash; Para isso, compre no maximo <span style="color:#8B9AB0;">{risk['tamanho_posicao']:.4f} unidades</span> (${risk['valor_posicao']:.2f})
     </div>
     <div style="margin-top:10px;padding-top:10px;border-top:1px solid #0F1E2E;
-                font-size:0.78rem;color:#2E4055;">
+                font-size:0.78rem;color:#627A8A;">
         Regra de ouro: nunca arrisque mais de 2% do portfolio em uma unica operacao.
     </div>
 </div>
@@ -1920,9 +1920,9 @@ def render_alerts():
             <div class="alert-buy">
                 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
                     <strong style="font-size:0.95rem;color:#E8EDF5;">{alert['name']}</strong>
-                    <span style="font-size:0.78rem;color:#4A5568;">Score {alert['score']}/100 &nbsp;|&nbsp; {conf.get('agree_buy',0)}/{conf.get('total',10)} indicadores</span>
+                    <span style="font-size:0.78rem;color:#7A8B9C;">Score {alert['score']}/100 &nbsp;|&nbsp; {conf.get('agree_buy',0)}/{conf.get('total',10)} indicadores</span>
                 </div>
-                <div style="font-size:0.8rem;color:#4A5568;margin-bottom:6px;">{alert['price']} &nbsp;&mdash;&nbsp; {alert['change_24h']} (24h)</div>
+                <div style="font-size:0.8rem;color:#7A8B9C;margin-bottom:6px;">{alert['price']} &nbsp;&mdash;&nbsp; {alert['change_24h']} (24h)</div>
                 <div style="font-size:0.83rem;color:#8B9AB0;">{alert['explanation']}</div>
             </div>
             """, unsafe_allow_html=True)
@@ -1941,9 +1941,9 @@ def render_alerts():
             <div class="alert-sell">
                 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
                     <strong style="font-size:0.95rem;color:#E8EDF5;">{alert['name']}</strong>
-                    <span style="font-size:0.78rem;color:#4A5568;">Score {alert['score']}/100</span>
+                    <span style="font-size:0.78rem;color:#7A8B9C;">Score {alert['score']}/100</span>
                 </div>
-                <div style="font-size:0.8rem;color:#4A5568;margin-bottom:6px;">{alert['price']} &nbsp;&mdash;&nbsp; {alert['change_24h']} (24h)</div>
+                <div style="font-size:0.8rem;color:#7A8B9C;margin-bottom:6px;">{alert['price']} &nbsp;&mdash;&nbsp; {alert['change_24h']} (24h)</div>
                 <div style="font-size:0.83rem;color:#8B9AB0;">{alert['explanation']}</div>
             </div>
             """, unsafe_allow_html=True)
@@ -1961,10 +1961,10 @@ def render_alerts():
             border-radius:10px;padding:14px 18px;margin:6px 0;">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
         <strong style="font-size:0.92rem;color:#E8EDF5;">{alert['name']}</strong>
-        <span style="font-size:0.76rem;color:#4A5568;">Score {alert['score']}/100 &nbsp;|&nbsp; {conf.get('agree_buy',0)}/{conf.get('total',10)} indicadores ({pct}%)</span>
+        <span style="font-size:0.76rem;color:#7A8B9C;">Score {alert['score']}/100 &nbsp;|&nbsp; {conf.get('agree_buy',0)}/{conf.get('total',10)} indicadores ({pct}%)</span>
     </div>
-    <div style="font-size:0.78rem;color:#4A5568;margin-bottom:4px;">{alert['price']} &nbsp;&mdash;&nbsp; {alert['change_24h']} (24h)</div>
-    <div style="font-size:0.8rem;color:#506070;">{alert['explanation']}</div>
+    <div style="font-size:0.78rem;color:#7A8B9C;margin-bottom:4px;">{alert['price']} &nbsp;&mdash;&nbsp; {alert['change_24h']} (24h)</div>
+    <div style="font-size:0.8rem;color:#8B9AB0;">{alert['explanation']}</div>
 </div>""", unsafe_allow_html=True)
     else:
         st.info("Nenhum ativo em observacao (Score 55-71) no momento.")
@@ -2054,7 +2054,7 @@ def render_news():
         <div style="flex:1;">
             <div style="font-size:0.86rem;color:#C0CDD8;font-weight:500;line-height:1.4;margin-bottom:6px;">{article['title']}</div>
             <div style="display:flex;justify-content:space-between;align-items:center;">
-                <span style="font-size:0.72rem;color:#2E4055;">{article['source']} &nbsp;·&nbsp; {article['date']}</span>
+                <span style="font-size:0.72rem;color:#627A8A;">{article['source']} &nbsp;·&nbsp; {article['date']}</span>
                 {link_html}
             </div>
         </div>
@@ -2510,10 +2510,10 @@ def render_patterns_ai():
         <div style="flex:1;min-width:180px;">
             <div style="font-size:1.25rem;font-weight:800;color:{ph_color};
                         letter-spacing:-0.5px;margin-bottom:4px;">{phase["label"]}</div>
-            <div style="font-size:0.83rem;color:#506070;line-height:1.6;">{phase["description"]}</div>
+            <div style="font-size:0.83rem;color:#8B9AB0;line-height:1.6;">{phase["description"]}</div>
         </div>
         <div style="text-align:right;flex-shrink:0;">
-            <div style="font-size:0.6rem;color:#2E4055;text-transform:uppercase;
+            <div style="font-size:0.6rem;color:#627A8A;text-transform:uppercase;
                         letter-spacing:1.5px;margin-bottom:4px;">Confianca</div>
             <div style="font-size:2rem;font-weight:700;color:{ph_color};
                         text-shadow:0 0 20px {ph_glow};">{conf_bar}%</div>
@@ -2533,10 +2533,10 @@ def render_patterns_ai():
         st.markdown("""
 <div style="background:#0C1522;border:1px solid #1A2A40;border-radius:12px;
             padding:22px 26px;text-align:center;">
-    <div style="font-size:0.88rem;color:#2E4055;margin-bottom:6px;">
+    <div style="font-size:0.88rem;color:#627A8A;margin-bottom:6px;">
         Nenhum padrao classico identificado neste periodo.
     </div>
-    <div style="font-size:0.74rem;color:#1A2A40;">
+    <div style="font-size:0.74rem;color:#4A5568;">
         Padroes emergem em janelas de 30-90 barras. Tente outro ativo ou aguarde mais dados.
     </div>
 </div>""", unsafe_allow_html=True)
@@ -2554,7 +2554,7 @@ def render_patterns_ai():
                 levels_html = "".join(
                     f'<div style="display:flex;justify-content:space-between;'
                     f'padding:5px 0;border-bottom:1px solid #0A1520;">'
-                    f'<span style="font-size:0.7rem;color:#2E4055;">{k}</span>'
+                    f'<span style="font-size:0.7rem;color:#627A8A;">{k}</span>'
                     f'<span style="font-size:0.72rem;font-weight:600;color:#8B9AB0;">${v:,.2f}</span>'
                     f'</div>'
                     for k, v in p.get("key_levels", {}).items()
@@ -2572,16 +2572,16 @@ def render_patterns_ai():
                      border:1px solid {pg.replace('0.3','0.28')};border-radius:20px;
                      padding:2px 8px;white-space:nowrap;flex-shrink:0;">{plabel}</span>
     </div>
-    <div style="font-size:0.76rem;color:#3A5060;line-height:1.65;margin-bottom:14px;">
+    <div style="font-size:0.76rem;color:#7A8B9C;line-height:1.65;margin-bottom:14px;">
         {p["description"]}
     </div>
     <div style="border-top:1px solid #0F1E2E;padding-top:10px;margin-bottom:12px;">
-        <div style="font-size:0.6rem;color:#2E4055;text-transform:uppercase;
+        <div style="font-size:0.6rem;color:#627A8A;text-transform:uppercase;
                     letter-spacing:1.2px;margin-bottom:6px;">Niveis-chave</div>
         {levels_html}
     </div>
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
-        <span style="font-size:0.6rem;color:#2E4055;text-transform:uppercase;letter-spacing:1px;">
+        <span style="font-size:0.6rem;color:#627A8A;text-transform:uppercase;letter-spacing:1px;">
             Confianca</span>
         <span style="font-size:0.9rem;font-weight:700;color:{pc};">{p["confidence"]}%</span>
     </div>
@@ -2609,7 +2609,7 @@ def render_patterns_ai():
 <div style="background:linear-gradient(140deg,#0C1520 0%,#101C2A 100%);
             border:1px solid #1A2A40;border-top:2px solid #00E5C3;
             border-radius:12px;padding:22px 26px;font-size:0.85rem;
-            color:#506070;line-height:1.8;">
+            color:#8B9AB0;line-height:1.8;">
     {paras_html}
 </div>""", unsafe_allow_html=True)
 
@@ -2678,7 +2678,7 @@ def render_patterns_ai():
         line_color="rgba(255,255,255,0.18)",
         annotation_text=f"Hoje ${last_p:.2f}",
         annotation_position="left",
-        annotation_font_color="#2E4055",
+        annotation_font_color="#627A8A",
     )
 
     fig_mc.update_layout(
@@ -2708,7 +2708,7 @@ def render_patterns_ai():
     with m1:
         st.markdown(render_glass_metric(
             "Probabilidade de Alta",
-            f"{prob_up:.0f}<span style='font-size:1rem;font-weight:400;color:#2E4055;'>%</span>",
+            f"{prob_up:.0f}<span style='font-size:1rem;font-weight:400;color:#627A8A;'>%</span>",
             "Em 30 dias vs. preco atual",
             prob_color, prob_glow,
         ), unsafe_allow_html=True)
@@ -2739,8 +2739,8 @@ def render_patterns_ai():
 
     st.markdown("""
 <div style="background:#090F1C;border:1px solid #0F1E2E;border-radius:10px;
-            padding:14px 20px;margin-top:10px;font-size:0.76rem;color:#2A3A50;line-height:1.7;">
-    <strong style="color:#1A2A40;">Nota metodologica:</strong>
+            padding:14px 20px;margin-top:10px;font-size:0.76rem;color:#6B7D8F;line-height:1.7;">
+    <strong style="color:#7A8B9C;">Nota metodologica:</strong>
     600 trajetorias simuladas com Geometric Brownian Motion calibrado nos retornos logaritmicos historicos
     (media e volatilidade). Os percentis mostram a distribuicao estatistica de resultados possiveis —
     nao sao previsoes. Volatilidade futura pode diferir do historico.
