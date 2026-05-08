@@ -32,7 +32,11 @@ from analysis import (
     compute_risk_metrics, compute_dca_plan, compute_correlation_matrix,
     monte_carlo_simulation, detect_market_phase, generate_smart_narrative,
 )
-from patterns import detect_all_patterns
+from ai_engine import (
+    generate_technical_narrative, detect_pattern,
+    generate_market_pulse, generate_portfolio_insights,
+    generate_backtest_narrative, PATTERN_NAMES,
+)
 
 # -------------------------------------------------------
 # Config da pagina
@@ -1400,6 +1404,22 @@ def render_overview():
 </div>
 """, unsafe_allow_html=True)
 
+    # ── Pulso do Mercado IA ───────────────────────────────────────────────
+    pulse_html = generate_market_pulse(scores, fg_val, btc_dom)
+    if pulse_html:
+        st.markdown('<span class="section-label">Pulso do Mercado</span>', unsafe_allow_html=True)
+        st.markdown(f"""
+<div style="background:linear-gradient(145deg,#0D0F1E,#0A0C18);
+            border:1px solid #1C2038;border-radius:14px;padding:20px 24px;">
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+    <div style="width:8px;height:8px;border-radius:50%;background:#6366F1;
+                box-shadow:0 0 8px rgba(99,102,241,0.7);flex-shrink:0;"></div>
+    <span style="font-size:0.72rem;font-weight:600;letter-spacing:1.5px;
+                 text-transform:uppercase;color:#6366F1;">Analise IA — Visao Executiva</span>
+  </div>
+  {pulse_html}
+</div>""", unsafe_allow_html=True)
+
 
 # -------------------------------------------------------
 # PAGINA: Analise Detalhada
@@ -1646,6 +1666,49 @@ def render_deep_dive():
             st.caption(f"{len(score_hist)} snapshots registrados desde {score_hist['date'].min()}")
     except Exception:
         pass
+
+    # ── Analise IA ────────────────────────────────────────────────────────
+    if score_result:
+        st.markdown('<span class="section-label">Analise IA</span>', unsafe_allow_html=True)
+        narrative = generate_technical_narrative(df, score_result, asset_id.title())
+        pattern_id, confidence, razoes = detect_pattern(df, score_result)
+        pattern_name = PATTERN_NAMES.get(pattern_id, pattern_id)
+        conf_colors  = {"alta": "#00E5C3", "media": "#FFB800", "baixa": "#8B9AB0"}
+        conf_color   = conf_colors.get(confidence, "#8B9AB0")
+        conf_labels  = {"alta": "Alta confianca", "media": "Confianca media", "baixa": "Baixa confianca"}
+
+        razoes_html = "".join(
+            f"<li style='margin-bottom:6px;'>{r}</li>" for r in razoes
+        ) if razoes else "<li style='color:#5A7888;'>Sem sinais especificos adicionais.</li>"
+
+        st.markdown(f"""
+<div style="background:linear-gradient(145deg,#0D0F1E,#0A0C18);
+            border:1px solid #1C2038;border-radius:14px;padding:22px 26px;margin-bottom:12px;">
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
+    <div style="width:8px;height:8px;border-radius:50%;background:#6366F1;
+                box-shadow:0 0 8px rgba(99,102,241,0.7);flex-shrink:0;"></div>
+    <span style="font-size:0.72rem;font-weight:600;letter-spacing:1.5px;
+                 text-transform:uppercase;color:#6366F1;">Analise Tecnica Narrativa</span>
+  </div>
+  {narrative}
+</div>
+<div style="background:linear-gradient(145deg,#0D0F1E,#0A0C18);
+            border:1px solid #1C2038;border-left:3px solid {conf_color};
+            border-radius:14px;padding:18px 22px;">
+  <div style="margin-bottom:10px;">
+    <span style="font-size:0.72rem;font-weight:600;letter-spacing:1.5px;
+                 text-transform:uppercase;color:#607888;">Padrao Detectado</span>
+    <span style="font-size:1rem;font-weight:700;color:{conf_color};margin-left:12px;">
+      {pattern_name}
+    </span>
+    <span style="font-size:0.75rem;color:#5A7888;margin-left:8px;">
+      &mdash; {conf_labels.get(confidence, '')}
+    </span>
+  </div>
+  <ul style="margin:0;padding-left:18px;font-size:0.83rem;color:#A0B5C5;line-height:1.85;">
+    {razoes_html}
+  </ul>
+</div>""", unsafe_allow_html=True)
 
 
 # -------------------------------------------------------
@@ -2226,6 +2289,34 @@ def render_portfolio():
         fig.update_layout(title="Alocacao", template="plotly_dark", paper_bgcolor="#0e1117", height=350)
         st.plotly_chart(fig, use_container_width=True)
 
+    # ── Insights IA do portfolio ──────────────────────────────────────────
+    try:
+        _, all_scores = analyze_all_assets()
+        portfolio_insights = generate_portfolio_insights(st.session_state.portfolio, all_scores)
+        if portfolio_insights:
+            st.markdown('<span class="section-label">Insights IA</span>', unsafe_allow_html=True)
+            items_html = "".join(
+                f"<li style='margin-bottom:12px;padding:10px 14px;"
+                f"background:rgba(99,102,241,0.04);border-radius:8px;"
+                f"border-left:2px solid rgba(99,102,241,0.35);'>{ins}</li>"
+                for ins in portfolio_insights
+            )
+            st.markdown(f"""
+<div style="background:linear-gradient(145deg,#0D0F1E,#0A0C18);
+            border:1px solid #1C2038;border-radius:14px;padding:20px 24px;">
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+    <div style="width:8px;height:8px;border-radius:50%;background:#6366F1;
+                box-shadow:0 0 8px rgba(99,102,241,0.7);flex-shrink:0;"></div>
+    <span style="font-size:0.72rem;font-weight:600;letter-spacing:1.5px;
+                 text-transform:uppercase;color:#6366F1;">Diagnostico IA do Portfolio</span>
+  </div>
+  <ul style="margin:0;padding-left:0;list-style:none;font-size:0.84rem;color:#A0B5C5;line-height:1.75;">
+    {items_html}
+  </ul>
+</div>""", unsafe_allow_html=True)
+    except Exception:
+        pass
+
     col_rem, col_clear = st.columns([3, 1])
     with col_rem:
         if st.session_state.portfolio:
@@ -2426,6 +2517,22 @@ def render_backtesting():
     mc4.metric("Trades",          n_trades, help=f"{n_wins} lucrativos")
     mc5.metric("Win Rate",        f"{win_rate:.0f}%")
     st.markdown(f"**Max Drawdown:** `{max_dd:.1f}%`")
+
+    # ── Narrativa IA do backtest ──────────────────────────────────────────
+    bt_narrative = generate_backtest_narrative(
+        trades, final_equity, bt_capital, max_dd, bt_asset.title()
+    )
+    st.markdown(f"""
+<div style="background:linear-gradient(145deg,#0D0F1E,#0A0C18);
+            border:1px solid #1C2038;border-radius:14px;padding:20px 24px;margin:16px 0;">
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+    <div style="width:8px;height:8px;border-radius:50%;background:#6366F1;
+                box-shadow:0 0 8px rgba(99,102,241,0.7);flex-shrink:0;"></div>
+    <span style="font-size:0.72rem;font-weight:600;letter-spacing:1.5px;
+                 text-transform:uppercase;color:#6366F1;">Interpretacao IA</span>
+  </div>
+  {bt_narrative}
+</div>""", unsafe_allow_html=True)
     st.markdown("---")
 
     # ── Grafico de equity ───────────────────────────────────────────────
